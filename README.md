@@ -23,7 +23,7 @@ SharedSounds files were harder. There are no subtitles for these so I ran the wh
 
 <u>Usage Example</u>
 
-You can use both search boxes to execute more complex queries, i.e. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions. 
+You can use both search boxes to execute more complex queries, e.g. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names. 
 
 
 <u>Planned Features</u>
