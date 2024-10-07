@@ -6,7 +6,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet.
 <u>Overview</u>
 
  - Search Baldur’s Gate 3’s audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
- - Community Project: Ability to edit some database entries to improve accuracy. 
+ - Ability to edit some database entries to improve accuracy. 
 
 
 <u>Use Cases</u>
@@ -18,7 +18,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet.
  
 Localization files were easy as they are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the Localization directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
 
-SharedSounds files were harder. There are no subtitles for these so I ran the whole folder through OpenAI Whisper Large model. Accuracy for any of these files that contain dialogue should be 90-100%. Character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. Whisper will likely have printed garbled nonsense for any files that don’t contain dialogue. If you find any of these feel free to remove it with the edit function. 
+SharedSounds files were harder. There are no subtitles for these so I ran the whole folder through OpenAI Whisper Large model (compute time: 134 hours). Accuracy for any of these files that contain dialogue should be 90-100%. Character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. Whisper will likely have printed garbled nonsense for any files that don’t contain dialogue. If you find any of these feel free to remove it with the edit function. 
 
 
 <u>Usage Example</u>
