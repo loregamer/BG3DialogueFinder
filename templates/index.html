@@ -10,10 +10,12 @@
             max-width: 800px;
             margin: auto;
             padding: 20px;
-            background-color: #001f3f; /* Dark navy background */
-            color: white; /* White text */
+            background-color: #001f3f;
+            color: white;
         }
-        input[type="text"], select, button {
+
+        /* Search Form Styling */
+        input[type="text"], select, button.search-btn {
             padding: 9px;
             margin: 15px 0;
             width: 100%;
@@ -21,16 +23,36 @@
             color: white;
             border: 1px solid #ccc;
         }
-        .results { margin-top: 20px; }
+
+        /* Style for the small Edit and Save buttons */
+        .small-btn {
+            font-size: 0.8em;
+            padding: 3px 6px;
+            margin-left: 10px;
+            background-color: #005f9f;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            display: none;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
         .result-item {
             padding: 15px;
             border: 1px solid #ddd;
             margin: 50px 0;
             background-color: #002f5f;
         }
-        h1 { text-align: center; }
-        .revision-form { margin-top: 10px; }
-        .revision-list { margin-top: 5px; }
+
+        input[type="text"].edit-field {
+            width: 70%;
+        }
         .usage-notes {
             margin-top: 40px;
             padding: 15px;
@@ -58,32 +80,46 @@
 </head>
 <body>
     <h1>NoComply BG3 Dialogue Finder</h1>
-    <form id="search-form">
-        <input type="text" id="search-term" placeholder="Enter query..." required>
-        <select id="search-by">
-            <option value="filename">Search by File Name</option>
+
+    <!-- Multi-search form with multiple search boxes -->
+    <form id="multi-search-form">
+        <input type="text" id="search-term-1" placeholder="Enter query 1...">
+        <select id="search-by-1">
             <option value="dialogue">Search by Dialogue</option>
             <option value="character">Search by Character</option>
+            <option value="filename">Search by File Name</option>
         </select>
-        <button type="submit">Search</button>
-    </form>
 
-    <button id="view-revisions-btn">User-Submitted Revisions</button>
+        <input type="text" id="search-term-2" placeholder="Enter query 2...">
+        <select id="search-by-2">
+            <option value="dialogue">Search by Dialogue</option>
+            <option value="character">Search by Character</option>
+            <option value="filename">Search by File Name</option>
+        </select>
+
+        <input type="text" id="search-term-3" placeholder="Enter query 3...">
+        <select id="search-by-3">
+            <option value="dialogue">Search by Dialogue</option>
+            <option value="character">Search by Character</option>
+            <option value="filename">Search by File Name</option>
+        </select>
+
+        <button type="submit" class="search-btn">Search</button>
+    </form>
 
     <div class="results" id="results"></div>
 
     <div class="usage-notes">
         <h2><span style="font-size:20px">Usage Notes:</span></h2>
         <ul>
-            <li><span style="font-size:15px"><strong>Type</strong> refers to whether the dialogue is Localization (subtitled) or SharedSounds (point-and-click).</span></li>
-            <li><span style="font-size:15px"><strong>Localization</strong> is 100% accurate as all these files are subtitled in the game. My script might still have missed some.</span></li>
-            <li><span style="font-size:15px"><strong>SharedSounds</strong> should be 90-100% accurate. It also contains a LOT of useless database entries; I parsed the entire folder with OpenAI Whisper Large model (this took 110 hours, my cpu is screaming at me). Many of these files don’t contain any dialogue at all so it will have just spat out garbage text strings/irrelevant phrases for these.</span></li>
-            <li><span style="font-size:15px">Other than those listed in TealRabbit19’s Point-Click Dialogue Files Database (Tavs/Origins/Companions), <strong>SharedSounds character names are currently mostly unidentified.</strong> If you're working on these files, search by dialogue or filename.</span>
-            <li><span style="font-size:15px">You can submit revisions to a specific search result if you find a mistake/can provide a character name etc. and I’ll get to it when I can. <strong>DON’T abuse this.</strong> All revision submissions are publicly viewable. Remember to sign them with your nexus/mod.io handle if you want to discuss your note with me directly. If you have revisions/data for a large amount of files, you can make a single submission with all of the relevant info, this will save me deleting loads of submissions later.</span></li>
-            <li><span style="font-size:15px">‘View Revisions' only updates on page reload, don’t spam submit because you can’t see yours without reloading.</span></li>
-            <li><span style="font-size:15px">If something is missing, submit a revision on any random search result with the details.</span></li>
-            <li><span style="font-size:15px">The database does not currently include Spellvoice entries. I plan on getting to this eventually if it’s possible to parse them for dialogue accurately.</span></li>
-            <li><span style="font-size:15px">I know the search/revision boxes are the wrong size, I am useless at HTML.</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">Placeholder</span></li>
         </ul>
         <h2><span style="font-size:15px">Planned Features:</span></h2>
         <ul>
@@ -101,76 +137,93 @@
     </div>
 
     <script>
-        document.getElementById('search-form').addEventListener('submit', function(e) {
+        // Multi-search form submission
+        document.getElementById('multi-search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const searchTerm = document.getElementById('search-term').value;
-            const searchBy = document.getElementById('search-by').value;
+            const searchTerm1 = document.getElementById('search-term-1').value;
+            const searchBy1 = document.getElementById('search-by-1').value;
+            const searchTerm2 = document.getElementById('search-term-2').value;
+            const searchBy2 = document.getElementById('search-by-2').value;
+            const searchTerm3 = document.getElementById('search-term-3').value;
+            const searchBy3 = document.getElementById('search-by-3').value;
 
-            fetch('/search', {
+            // Send the search parameters to the server
+            fetch('/multi_search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ search_term: searchTerm, search_by: searchBy })
+                body: new URLSearchParams({
+                    search_term_1: searchTerm1,
+                    search_by_1: searchBy1,
+                    search_term_2: searchTerm2,
+                    search_by_2: searchBy2,
+                    search_term_3: searchTerm3,
+                    search_by_3: searchBy3
+                })
             }).then(response => response.json())
               .then(data => {
                   const resultsDiv = document.getElementById('results');
-                  resultsDiv.innerHTML = '';
+                  resultsDiv.innerHTML = '';  // Clear previous results
+                  
                   data.forEach(result => {
                       const resultItem = document.createElement('div');
                       resultItem.className = 'result-item';
                       resultItem.innerHTML = `
                         <strong>File:</strong> ${result.filename}<br><br>
-                        <strong>Dialogue:</strong> <i>"${result.dialogue}"</i><br><br>
-                        <strong>Character:</strong> ${result.character}<br><br>
-                        <strong>Type:</strong> ${result.type}<br><br>
-                        <button onclick="toggleRevisions(this)">View Revisions</button>
-                        <div class="revision-list" style="display:none;">
-                            ${result.revisions.map((rev, index) => `<p><b>Submission ${index + 1}:</b> ${rev}</p>`).join('')}
-                        </div>
-                        <div class="revision-form">
-                            <input type="text" placeholder="Submit a revision">
-                            <button onclick="submitRevision(${result.id}, this)">Submit</button>
-                        </div>`;
+                        <strong>Dialogue:</strong> 
+                        <span id="dialogue-${result.id}">${result.dialogue}</span>
+                        <input type="text" class="edit-field" id="edit-dialogue-${result.id}" style="display:none;" value="${result.dialogue}">
+                        <button class="small-btn" id="edit-btn-dialogue-${result.id}" onclick="editField('${result.id}', 'dialogue')">Edit</button>
+                        <button class="small-btn save-btn" id="save-btn-dialogue-${result.id}" onclick="saveChanges('${result.id}', 'dialogue')">Save</button><br><br>
+
+                        <strong>Character:</strong> 
+                        <span id="character-${result.id}">${result.character}</span>
+                        <input type="text" class="edit-field" id="edit-character-${result.id}" style="display:none;" value="${result.character}">
+                        <button class="small-btn" id="edit-btn-character-${result.id}" onclick="editField('${result.id}', 'character')">Edit</button>
+                        <button class="small-btn save-btn" id="save-btn-character-${result.id}" onclick="saveChanges('${result.id}', 'character')">Save</button><br><br>
+
+                        <strong>Type:</strong> ${result.type}<br>
+                      `;
                       resultsDiv.appendChild(resultItem);
                   });
               });
         });
 
-        document.getElementById('view-revisions-btn').addEventListener('click', function() {
-            fetch('/view_revisions')
-                .then(response => response.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById('results');
-                    resultsDiv.innerHTML = '';
-                    data.forEach(result => {
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'result-item';
-                        resultItem.innerHTML = `
-                            <strong>File:</strong> ${result.filename}<br><br>
-                            <strong>Dialogue:</strong> ${result.dialogue}<br><br>
-                            <strong>Character:</strong> ${result.character}<br><br>
-                            <strong>Type:</strong> ${result.type}<br><br>
-                            <div class="revision-list">
-                                ${result.revisions.map((rev, index) => `<p>Revision ${index + 1}: ${rev}</p>`).join('')}
-                            </div>`;
-                        resultsDiv.appendChild(resultItem);
-                    });
-                });
-        });
+        // Function to handle editing
+        function editField(resultId, field) {
+            document.getElementById(field + '-' + resultId).style.display = 'none'; // Hide span text
+            document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Edit button
 
-        function toggleRevisions(button) {
-            const revisionList = button.nextElementSibling;
-            revisionList.style.display = revisionList.style.display === 'none' ? 'block' : 'none';
+            // Show the input field and Save button
+            document.getElementById('edit-' + field + '-' + resultId).style.display = 'inline-block';
+            document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'inline-block';
         }
 
-        function submitRevision(fileId, btn) {
-            const revisionText = btn.previousElementSibling.value;
-            fetch('/submit_revision', {
+        // Function to handle saving
+        function saveChanges(resultId, field) {
+            const updatedValue = document.getElementById('edit-' + field + '-' + resultId).value;
+
+            fetch('/update_entry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ file_id: fileId, revision: revisionText })
+                body: new URLSearchParams({
+                    id: resultId,
+                    [field]: updatedValue // Send the updated field value
+                })
             }).then(response => response.text())
               .then(data => {
-                  alert(data);
+                  alert('Update successful!');
+
+                  // Show updated text and Edit button again
+                  document.getElementById(field + '-' + resultId).innerText = updatedValue;
+                  document.getElementById(field + '-' + resultId).style.display = 'inline';
+                  document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block';
+
+                  // Hide the input field and Save button
+                  document.getElementById('edit-' + field + '-' + resultId).style.display = 'none';
+                  document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'none';
+              }).catch(err => {
+                  alert('Update failed.');
+                  console.error(err);
               });
         }
     </script>

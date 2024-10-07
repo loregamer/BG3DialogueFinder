@@ -1,14 +1,16 @@
-# web.py - Flask Backend with reverted revision handling and integrated database path
-
-from flask import Flask, render_template, request, jsonify
-import sqlite3
 import os
+from flask import Flask, request, jsonify, render_template
+import sqlite3
 
 app = Flask(__name__)
 
-
 # Database path handling
 db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+
+def get_db_connection():
+    conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'database.db'))
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def query_db(query, args=(), one=False):
     conn = sqlite3.connect(db_path)
@@ -18,83 +20,119 @@ def query_db(query, args=(), one=False):
     conn.close()
     return (rv[0] if rv else None) if one else rv
 
+# Serve the homepage
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Handle the search request
 @app.route('/search', methods=['POST'])
 def search():
     search_term = request.form['search_term']
     search_by = request.form['search_by']
 
-    if search_by == 'filename':
-        results = query_db('SELECT * FROM filename WHERE filename LIKE ?', [f"%{search_term}%"])
-    elif search_by == 'dialogue':
-        results = query_db('SELECT * FROM filename WHERE dialogue LIKE ?', [f"%{search_term}%"])
-    elif search_by == 'character':
-        results = query_db('SELECT * FROM filename WHERE character LIKE ?', [f"%{search_term}%"])
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    formatted_results = []
-    for result in results:
-        file_id = result[0]
-        revisions = query_db('SELECT revision FROM revisions WHERE file_id = ?', [file_id])
-        formatted_results.append({
-            'id': file_id,
-            'filename': result[1],
-            'dialogue': result[2],
-            'character': result[3],
-            'type': result[4],
-            'revisions': [rev[0] for rev in revisions]
+    query = f"SELECT * FROM filename WHERE {search_by} LIKE ?"
+    cursor.execute(query, ('%' + search_term + '%',))
+    results = cursor.fetchall()
+
+    # Prepare results to send back to frontend
+    data = []
+    for row in results:
+        data.append({
+            'id': row['id'],
+            'filename': row['filename'],
+            'dialogue': row['dialogue'],
+            'character': row['character'],
+            'type': row['type'],
         })
 
-    return jsonify(formatted_results)
-
-@app.route('/submit_revision', methods=['POST'])
-def submit_revision():
-    file_id = request.form['file_id']
-    revision = request.form['revision']
-    
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO revisions (file_id, revision) VALUES (?, ?)", (file_id, revision))
-    conn.commit()
     conn.close()
+    return jsonify(data)
+
+# Multi-search functionality
+@app.route('/multi_search', methods=['POST'])
+def multi_search():
+    # Retrieve search terms and filters
+    search_term_1 = request.form.get('search_term_1')
+    search_by_1 = request.form.get('search_by_1')
+    search_term_2 = request.form.get('search_term_2')
+    search_by_2 = request.form.get('search_by_2')
+    search_term_3 = request.form.get('search_term_3')
+    search_by_3 = request.form.get('search_by_3')
+
+    # Build the SQL query dynamically based on non-empty search terms
+    conditions = []
+    params = []
+
+    if search_term_1:
+        conditions.append(f"{search_by_1} LIKE ?")
+        params.append(f"%{search_term_1}%")
     
-    return 'Revision submitted!'
+    if search_term_2:
+        conditions.append(f"{search_by_2} LIKE ?")
+        params.append(f"%{search_term_2}%")
+    
+    if search_term_3:
+        conditions.append(f"{search_by_3} LIKE ?")
+        params.append(f"%{search_term_3}%")
 
-@app.route('/view_revisions')
-def view_revisions():
-    results = query_db("""
-        SELECT f.id, f.filename, f.dialogue, f.character, f.type, r.revision
-        FROM filename f
-        JOIN revisions r ON f.id = r.file_id
-    """)
+    query = "SELECT * FROM filename"
+    
+    # Add WHERE clause only if there are conditions
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
 
-    formatted_results = []
-    current_file_id = None
-    current_file_data = None
+    # Execute the query
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    results = cursor.fetchall()
 
+    # Prepare results to send back to frontend
+    data = []
     for row in results:
-        file_id = row[0]
-        if file_id != current_file_id:
-            if current_file_data:
-                formatted_results.append(current_file_data)
-            current_file_data = {
-                'id': file_id,
-                'filename': row[1],
-                'dialogue': row[2],
-                'character': row[3],
-                'type': row[4],
-                'revisions': []
-            }
-            current_file_id = file_id
-        
-        current_file_data['revisions'].append(row[5])
+        data.append({
+            'id': row['id'],
+            'filename': row['filename'],
+            'dialogue': row['dialogue'],
+            'character': row['character'],
+            'type': row['type']
+        })
 
-    if current_file_data:
-        formatted_results.append(current_file_data)
+    conn.close()
+    return jsonify(data)
 
-    return jsonify(formatted_results)
+# Update database entries
+@app.route('/update_entry', methods=['POST'])
+def update_entry():
+    entry_id = request.form['id']
+    field = request.form.get('dialogue') or request.form.get('character')
 
+    # Determine which field to update
+    column = 'dialogue' if 'dialogue' in request.form else 'character'
+
+    # Get a connection to the database
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Update the relevant field in the database
+    cursor.execute(f"""
+        UPDATE filename
+        SET {column} = ?
+        WHERE id = ?
+    """, (field, entry_id))
+
+    # Commit the transaction
+    conn.commit()
+
+    # Close the connection
+    conn.close()
+
+    return "Entry successfully updated!"
+
+# Run the app
 if __name__ == '__main__':
     app.run(debug=True, port=34611, host='0.0.0.0')
