@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoComply BG3 Dialogue Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #001f3f; /* Dark navy background */
+            color: white; /* White text */
+        }
+        input[type="text"], select, button {
+            padding: 9px;
+            margin: 15px 0;
+            width: 100%;
+            background-color: #353535;
+            color: white;
+            border: 1px solid #ccc;
+        }
+        .results { margin-top: 20px; }
+        .result-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin: 50px 0;
+            background-color: #002f5f;
+        }
+        h1 { text-align: center; }
+        .revision-form { margin-top: 10px; }
+        .revision-list { margin-top: 5px; }
+        .usage-notes {
+            margin-top: 40px;
+            padding: 15px;
+            background-color: #002f5f; /* Slightly lighter navy for contrast */
+            border-radius: 5px;
+        }
+        .usage-notes h2 {
+            margin-top: 0;
+        }
+        .usage-notes p, .usage-notes ul {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .usage-notes ul li {
+            margin-bottom: 5px; /* Add space between bullet points */
+        }
+        .usage-notes strong {
+            color: #ffcc00; /* Highlight important text */
+        }
+        /* New rule to set strong text color to yellow */
+        .result-item strong {
+            color: #ffcc00; /* Change text color to yellow for File, Dialogue, Character, and Type */
+        }
+    </style>
+</head>
+<body>
+    <h1>NoComply BG3 Dialogue Finder</h1>
+    <form id="search-form">
+        <input type="text" id="search-term" placeholder="Enter query..." required>
+        <select id="search-by">
+            <option value="filename">Search by File Name</option>
+            <option value="dialogue">Search by Dialogue</option>
+            <option value="character">Search by Character</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    <button id="view-revisions-btn">User-Submitted Revisions</button>
+
+    <div class="results" id="results"></div>
+
+    <div class="usage-notes">
+        <h2><span style="font-size:20px">Usage Notes:</span></h2>
+        <ul>
+            <li><span style="font-size:15px"><strong>Type</strong> refers to whether the dialogue is Localization (subtitled) or SharedSounds (point-and-click).</span></li>
+            <li><span style="font-size:15px"><strong>Localization</strong> is 100% accurate as all these files are subtitled in the game. My script might still have missed some.</span></li>
+            <li><span style="font-size:15px"><strong>SharedSounds</strong> should be 90-100% accurate. It also contains a LOT of useless database entries; I parsed the entire folder with OpenAI Whisper Large model (this took 110 hours, my cpu is screaming at me). Many of these files don’t contain any dialogue at all so it will have just spat out garbage text strings/irrelevant phrases for these.</span></li>
+            <li><span style="font-size:15px">Other than those listed in TealRabbit19’s Point-Click Dialogue Files Database (Tavs/Origins/Companions), <strong>SharedSounds character names are currently mostly unidentified.</strong> If you're working on these files, search by dialogue or filename.</span>
+            <li><span style="font-size:15px">You can submit revisions to a specific search result if you find a mistake/can provide a character name etc. and I’ll get to it when I can. <strong>DON’T abuse this.</strong> All revision submissions are publicly viewable. Remember to sign them with your nexus/mod.io handle if you want to discuss your note with me directly. If you have revisions/data for a large amount of files, you can make a single submission with all of the relevant info, this will save me deleting loads of submissions later.</span></li>
+            <li><span style="font-size:15px">‘View Revisions' only updates on page reload, don’t spam submit because you can’t see yours without reloading.</span></li>
+            <li><span style="font-size:15px">If something is missing, submit a revision on any random search result with the details.</span></li>
+            <li><span style="font-size:15px">The database does not currently include Spellvoice entries. I plan on getting to this eventually if it’s possible to parse them for dialogue accurately.</span></li>
+            <li><span style="font-size:15px">I know the search/revision boxes are the wrong size, I am useless at HTML.</span></li>
+        </ul>
+        <h2><span style="font-size:15px">Planned Features:</span></h2>
+        <ul>
+            <li><span style="font-size:13px">Ability to download search results.</span></li>
+            <li><span style="font-size:13px">Implement Spellvoice if possible.</span></li>
+        </ul>
+        <h2><span style="font-size:15px">Special Thanks:</span></h2>
+        <ul>
+            <li><span style="font-size:13px"><strong>Pandora</strong> (Nexus), for their list of Voice UUIDs. Invaluable.</span></li>
+            <li><span style="font-size:13px"><strong>TealRabbit19</strong> (Nexus), for their extraordinary labour of love in manually creating their Dialogue Files Database, your patience astounds me.</span></li>
+            <li><span style="font-size:13px"><strong>Larian Studios</strong>, for their support of the modding community and for creating what I believe to be the greatest game of all time.</span></li>
+        </ul>
+        <h2><span style="font-size:15px">Changelog:</span></h2>
+        <p><span style="font-size:13px">6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span></p>
+    </div>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = document.getElementById('search-term').value;
+            const searchBy = document.getElementById('search-by').value;
+
+            fetch('/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ search_term: searchTerm, search_by: searchBy })
+            }).then(response => response.json())
+              .then(data => {
+                  const resultsDiv = document.getElementById('results');
+                  resultsDiv.innerHTML = '';
+                  data.forEach(result => {
+                      const resultItem = document.createElement('div');
+                      resultItem.className = 'result-item';
+                      resultItem.innerHTML = `
+                        <strong>File:</strong> ${result.filename}<br><br>
+                        <strong>Dialogue:</strong> <i>"${result.dialogue}"</i><br><br>
+                        <strong>Character:</strong> ${result.character}<br><br>
+                        <strong>Type:</strong> ${result.type}<br><br>
+                        <button onclick="toggleRevisions(this)">View Revisions</button>
+                        <div class="revision-list" style="display:none;">
+                            ${result.revisions.map((rev, index) => `<p><b>Submission ${index + 1}:</b> ${rev}</p>`).join('')}
+                        </div>
+                        <div class="revision-form">
+                            <input type="text" placeholder="Submit a revision">
+                            <button onclick="submitRevision(${result.id}, this)">Submit</button>
+                        </div>`;
+                      resultsDiv.appendChild(resultItem);
+                  });
+              });
+        });
+
+        document.getElementById('view-revisions-btn').addEventListener('click', function() {
+            fetch('/view_revisions')
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    data.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'result-item';
+                        resultItem.innerHTML = `
+                            <strong>File:</strong> ${result.filename}<br><br>
+                            <strong>Dialogue:</strong> ${result.dialogue}<br><br>
+                            <strong>Character:</strong> ${result.character}<br><br>
+                            <strong>Type:</strong> ${result.type}<br><br>
+                            <div class="revision-list">
+                                ${result.revisions.map((rev, index) => `<p>Revision ${index + 1}: ${rev}</p>`).join('')}
+                            </div>`;
+                        resultsDiv.appendChild(resultItem);
+                    });
+                });
+        });
+
+        function toggleRevisions(button) {
+            const revisionList = button.nextElementSibling;
+            revisionList.style.display = revisionList.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function submitRevision(fileId, btn) {
+            const revisionText = btn.previousElementSibling.value;
+            fetch('/submit_revision', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ file_id: fileId, revision: revisionText })
+            }).then(response => response.text())
+              .then(data => {
+                  alert(data);
+              });
+        }
+    </script>
+</body>
+</html>
