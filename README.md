@@ -21,7 +21,9 @@ Localization files were easy as they are referenced in english.loca along with t
 SharedSounds files were harder. 
 
 • There are no subtitles for these so I ran the whole directory through OpenAI Whisper Large model (compute time: 134 hours, my CPU is screaming at me). Accuracy for any of these files that contain dialogue should be 90-100%. 
+
 • SharadSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database (important to note that, while endlessly useful, by the creator's own admission this database is not 100% accurate. These character names can be submitted for revision in the search results). 
+
 • Whisper will likely have printed garbled nonsense for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to remove it with the edit function. 
 
 
