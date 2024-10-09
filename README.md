@@ -24,7 +24,7 @@ SharedSounds files were harder:
 
 • SharadSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database (important to note that, while endlessly useful, by the creator's own admission this database is not 100% accurate. These character names can be submitted for revision in the search results). 
 
-• Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to remove it with the edit function. 
+• Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to submit for revision.
 
 
 <u>Usage Example</u>
