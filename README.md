@@ -11,7 +11,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 <u>Use Cases</u>
 
- - For the creation of audio-based mods for Baldur’s Gate 3.
+ - For modding dialogue and audio in Baldur’s Gate 3.
 
 
 <u>How I Did This</u>
