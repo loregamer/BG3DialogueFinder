@@ -18,9 +18,9 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 ### Database Creation and Accuracy
  
-  Localization are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
+  Localization files are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
 
-  SharedSounds files were harder:
+  SharedSounds was harder:
 
   • There are no subtitles for these so I ran the whole directory through OpenAI Whisper Large model (compute time: 134 hours, my CPU is screaming at me). Accuracy for any of these files that contain dialogue should be 90-100%. 
 
