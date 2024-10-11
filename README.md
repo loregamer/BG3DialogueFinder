@@ -1,20 +1,20 @@
 WIP, not release ready. If you've stumbled across this, do not use yet. It will only mess up your project.
 
-<u>NoComply BG3 Dialogue Finder</u>
+# NoComply BG3 Dialogue Finder
 
-
-<u>Overview</u>
-
+### Overview
  - Search Baldur’s Gate 3’s audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
- - Ability to edit some database entries to improve accuracy. 
+ - Ability to edit some database entries to improve accuracy.
 
+### Installation
+ - Online web app with edit feature <a href="https://bg3dialoguefinder.xyz/">here</a> (recommended).
+ - Offline via Github: Just download, run app.py and copy the link provided by your terminal into your browser. I'll update the repo with the live database every week or so.
 
-<u>Use Cases</u>
+### Use Cases
 
  - For modding dialogue audio in Baldur’s Gate 3.
 
-
-<u>How I Did This</u>
+### How This Was Done
  
 Localization files were easy as they are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the Localization directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
 
@@ -27,16 +27,17 @@ SharedSounds files were harder:
 • Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to submit for revision.
 
 
-<u>Usage Examples</u>
+### Usage Examples
 
 You can use both search boxes to execute more complex queries, e.g. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names. 
 
 'Type' refers to the type of dialogue. All Localization files have the type: 
-  
-  Localization (Subtitled) 
+  ```
+  Localization (Subtitled)
+  ```
 
 For the types in SharedSounds, I have referred to the resource identifiers in /[PAK]_Vocals/_merged.lsf. They are as follows:
-  
+  ```
   Action_Attack
   Action_Attack Stealth
   Action_BuffTarget
@@ -105,25 +106,27 @@ For the types in SharedSounds, I have referred to the resource identifiers in /[
   ReptAction_PortraitClickDowned
   ReptAction_PortraitClickSpam
   ReptAction_PortraitClickSpam Stealth
+  ```
+Sometimes these have character-specific modifiers appended such as `(Durge)` for dark urge-specific lines.
 
-Sometimes these have character-specific modifiers appended such as (Durge) for Dark Urge-specific lines.
-
+<br>
   
-<u>Planned Features</u>
+### Planned Features
 
  - Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.
 
  - Add localizaton files missing from english.loca (likely cut content).
 
 
-<u>Special Thanks</u>
+### Special Thanks
 
- - Pandora (Nexus), for their list of Voice UUIDs. Invaluable.
- - TealRabbit19 (Nexus), for their extraordinary labour of love in manually creating their Dialogue Files Database. Your patience astounds me.
- - Larian Studios, for their support of the modding community.
+ - **Pandora (Nexus)**, for their list of Voice UUIDs. Invaluable.
+ - **TealRabbit19 (Nexus)**, for their extraordinary labour of love in manually creating their Dialogue Files Database. Your patience astounds me.
+ - **Larian Studios**, for their support of the modding community.
 
 
-<u>Changelog</u>
-
+### Changelog
+```
 10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
-6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use. 
+6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
+```
