@@ -7,36 +7,78 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: auto;
             padding: 20px;
-            background-color: #001f3f;
+            background-color: #011224;
             color: white;
         }
 
         /* Search Form Styling */
-        input[type="text"], select, button.search-btn {
+        .search-pair {
+            display: flex; /* Use flexbox for horizontal alignment */
+            margin: 10px 0; /* Add some vertical spacing between pairs */
+        }
+
+        input[type="text"], select {
+            padding: 9px;
+            margin: 5px; /* Remove margin to avoid extra gaps */
+            width: 100%; /* Full width for inputs */
+            background-color: #353535;
+            font-weight: bold;
+            color: white;
+            border: 1px solid #ccc;
+            border-radius: 3px; /* Rounded corners */
+            transition: all 0.3s; /* Smooth transition */
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #cc851c; /* Highlight border on focus */
+            outline: none; /* Remove default outline */
+        }
+
+        /* Style for buttons */
+        button {
             padding: 9px;
             margin: 15px 0;
             width: 100%;
-            background-color: #353535;
+            background-color: #4CAF50; /* Green background */
+            font-weight: bold;
             color: white;
-            border: 1px solid #ccc;
+            border: none;
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+            transition: all 0.3s; /* Smooth transition */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow effect */
         }
 
-        /* Style for the small Edit and Save buttons */
+        button:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
+
+        /* Style for the small Edit, Save, and Cancel buttons */
         .small-btn {
             font-size: 0.8em;
             padding: 3px 6px;
-            margin-left: 10px;
+            margin-left: 5px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            margin-right: 0px;
+            vertical-align: middle; /* Aligns the button vertically with text */
             background-color: #005f9f;
             color: white;
             border: none;
+            width: 5.5%;
+            border-radius: 3px; /* Rounded corners */
             cursor: pointer;
+            transition: all 0.3s; /* Smooth transition */
+            display: none; /* Hide these buttons by default */
         }
 
-        .save-btn {
-            display: none;
+        .small-btn:hover {
+            background-color: #004f80; /* Darker blue on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
         }
 
         .results {
@@ -44,110 +86,185 @@
         }
 
         .result-item {
-            padding: 15px;
+            padding-left: 15px;
+            padding-top: 15px;
+            padding-bottom: 15px;
             border: 1px solid #ddd;
             margin: 50px 0;
+            line-height: 120%;
             background-color: #002f5f;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 1s; /* Smooth fade-in effect */
+        }
+
+        .result-item.visible {
+            transition: opacity 1s; /* Smooth fade-in effect */
+            opacity: 1; /* Show with opacity */
         }
 
         input[type="text"].edit-field {
-            width: 70%;
+            width: 75%;
+            margin: 5px; /* Remove margin to avoid extra gaps */
         }
+
         .usage-notes {
+            margin: 0 auto;
             margin-top: 40px;
+            width: 75%;
             padding: 15px;
-            background-color: #002f5f; /* Slightly lighter navy for contrast */
+            background-color: #022345; /* Slightly lighter navy for contrast */
             border-radius: 5px;
         }
+
         .usage-notes h2 {
             margin-top: 0;
         }
+
         .usage-notes p, .usage-notes ul {
             margin: 10px 0;
             line-height: 1.6;
         }
+
         .usage-notes ul li {
             margin-bottom: 5px; /* Add space between bullet points */
         }
+
         .usage-notes strong {
-            color: #ffcc00; /* Highlight important text */
+            color: #e98f09; /* Highlight important text */
         }
+
         /* New rule to set strong text color to yellow */
         .result-item strong {
-            color: #ffcc00; /* Change text color to yellow for File, Dialogue, Character, and Type */
+            color: #e98f09; /* Change text color to yellow for File, Dialogue, Character, and Type */
+        }
+
+        /* Feedback message style */
+        .feedback-message {
+            color: #e98f09;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            button, .small-btn {
+                width: 100%; /* Full width buttons on smaller screens */
+            }
+
+            input[type="text"], select {
+                font-size: 0.9em; /* Slightly smaller font on small screens */
+            }
         }
     </style>
 </head>
 <body>
     <h1>NoComply BG3 Dialogue Finder</h1>
 
+    <!-- Feedback message -->
+    <div id="feedback" class="feedback-message" style="display:none;"></div>
+
     <!-- Multi-search form with multiple search boxes -->
     <form id="multi-search-form">
-        <input type="text" id="search-term-1" placeholder="Enter query 1...">
-        <select id="search-by-1">
-            <option value="dialogue">Search by Dialogue</option>
-            <option value="character">Search by Character</option>
-            <option value="filename">Search by File Name</option>
-        </select>
+        <div class="search-pair">
+            <input type="text" id="search-term-1" placeholder="Enter query 1...">
+            <select id="search-by-1">
+                <option value="dialogue">Search by Dialogue</option>
+                <option value="character">Search by Character</option>
+                <option value="type">Search by Type</option>
+                <option value="filename">Search by File Name</option>
+            </select>
+        </div>
 
-        <input type="text" id="search-term-2" placeholder="Enter query 2...">
-        <select id="search-by-2">
-            <option value="dialogue">Search by Dialogue</option>
-            <option value="character">Search by Character</option>
-            <option value="filename">Search by File Name</option>
-        </select>
+        <div class="search-pair">
+            <input type="text" id="search-term-2" placeholder="Enter query 2...">
+            <select id="search-by-2">
+                <option value="character">Search by Character</option>
+                <option value="dialogue">Search by Dialogue</option>
+                <option value="type">Search by Type</option>
+                <option value="filename">Search by File Name</option>
+            </select>
+        </div>
 
-        <input type="text" id="search-term-3" placeholder="Enter query 3...">
-        <select id="search-by-3">
-            <option value="dialogue">Search by Dialogue</option>
-            <option value="character">Search by Character</option>
-            <option value="filename">Search by File Name</option>
-        </select>
+        <div class="search-pair">
+            <input type="text" id="search-term-3" placeholder="Enter query 3...">
+            <select id="search-by-3">
+                <option value="type">Search by Type</option>
+                <option value="character">Search by Character</option>
+                <option value="dialogue">Search by Dialogue</option>
+                <option value="filename">Search by File Name</option>
+            </select>
+        </div>
 
         <button type="submit" class="search-btn">Search</button>
     </form>
+
+    <!-- Download button for CSV -->
+    <button id="download-csv" style="display:none;">Download Results</button> <!-- Initially hidden -->
 
     <div class="results" id="results"></div>
 
     <div class="usage-notes">
         <h2><span style="font-size:20px">Usage Notes:</span></h2>
         <ul>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px"><strong>Use correct spelling and grammar when submitting edits.</strong> I verify all the edits, they won't update before I do this. I go through them every few days.</span></li>
+            <li><span style="font-size:15px">The edit function is not available for subtitled dialogue - these entries are 100% accurate.</span></li>
+            <li><span style="font-size:15px">If you submit numerous edits that are wrong, have poor grammar, or if you abuse the edit function in any way, your IP will be banned from using the tool.</span></li>
+            <li><span style="font-size:15px">If you think something is missing, try a different search function first and let me know second. Learn more about the accuracy of the database on <a href="https://github.com/NoComplyDev/BG3DialogueFinder"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
+            <li><span style="font-size:15px">Some of the files contain music. If you find any, feel free to add 'Music' as the character. I may add a notes section for music files at a later date.</span></li>
             <li><span style="font-size:15px">Placeholder</span></li>
             <li><span style="font-size:15px">Placeholder</span></li>
             <li><span style="font-size:15px">Placeholder</span></li>
         </ul>
-        <h2><span style="font-size:15px">Planned Features:</span></h2>
+        <h2><span style="font-size:15px">Planned Updates:</span></h2>
         <ul>
-            <li><span style="font-size:13px">Ability to download search results.</span></li>
-            <li><span style="font-size:13px">Implement Spellvoice if possible.</span></li>
+            <li><span style="font-size:13px">Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.</span></li>
+            <li><span style="font-size:13px">Add localizaton files missing from english.loca (likely cut content).</span></li>
         </ul>
         <h2><span style="font-size:15px">Special Thanks:</span></h2>
         <ul>
             <li><span style="font-size:13px"><strong>Pandora</strong> (Nexus), for their list of Voice UUIDs. Invaluable.</span></li>
-            <li><span style="font-size:13px"><strong>TealRabbit19</strong> (Nexus), for their extraordinary labour of love in manually creating their Dialogue Files Database, your patience astounds me.</span></li>
-            <li><span style="font-size:13px"><strong>Larian Studios</strong>, for their support of the modding community and for creating what I believe to be the greatest game of all time.</span></li>
+            <li><span style="font-size:13px"><strong>TealRabbit19</strong> (Nexus), for their extraordinary labour of love in manually creating their Dialogue Files Database. Your patience astounds me.</span></li>
+            <li><span style="font-size:13px"><strong>Larian Studios</strong>, for their support of the modding community.</span></li>
         </ul>
         <h2><span style="font-size:15px">Changelog:</span></h2>
-        <p><span style="font-size:13px">6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span></p>
+        <p><span style="font-size:10px">10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.</span></p>
+        <span style="font-size:10px">6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span>
     </div>
 
     <script>
+        let csvBlobUrl = ''; // Variable to hold the Blob URL
+
         // Multi-search form submission
         document.getElementById('multi-search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const searchTerm1 = document.getElementById('search-term-1').value;
+            const searchTerm1 = document.getElementById('search-term-1').value.trim();
+            const searchTerm2 = document.getElementById('search-term-2').value.trim();
+            const searchTerm3 = document.getElementById('search-term-3').value.trim();
+
+            // Validate that at least one search field is filled
+            if (!searchTerm1 && !searchTerm2 && !searchTerm3) {
+                alert("Please enter a search term in at least one of the search boxes.");
+                return; // Prevent the search from being executed
+            }
+
             const searchBy1 = document.getElementById('search-by-1').value;
-            const searchTerm2 = document.getElementById('search-term-2').value;
             const searchBy2 = document.getElementById('search-by-2').value;
-            const searchTerm3 = document.getElementById('search-term-3').value;
             const searchBy3 = document.getElementById('search-by-3').value;
 
-            // Send the search parameters to the server
+            // Reset the feedback message
+            const feedbackMessage = document.getElementById('feedback');
+            feedbackMessage.style.display = 'none';
+
+            // Reset the download button text and hide it when a new search is performed
+            const downloadButton = document.getElementById('download-csv');
+            downloadButton.textContent = 'Download Results'; // Reset to default text
+            downloadButton.style.display = 'none'; // Hide initially
+
+            // Send the search parameters to the server if validation passes
             fetch('/multi_search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -157,45 +274,126 @@
                     search_term_2: searchTerm2,
                     search_by_2: searchBy2,
                     search_term_3: searchTerm3,
-                    search_by_3: searchBy3
+                    search_by_3: searchBy3,
                 })
             }).then(response => response.json())
               .then(data => {
                   const resultsDiv = document.getElementById('results');
                   resultsDiv.innerHTML = '';  // Clear previous results
-                  
+
+                  // Log the fetched data
+                  console.log('Search Results:', data);
+
+                  // Prepare CSV data
+                  let csvContent = "Filename,Dialogue,Character,Type\n"; // CSV header
+
                   data.forEach(result => {
                       const resultItem = document.createElement('div');
-                      resultItem.className = 'result-item';
+                      resultItem.className = 'result-item visible'; // Add visible class for fade-in effect
                       resultItem.innerHTML = `
-                        <strong>File:</strong> ${result.filename}<br><br>
-                        <strong>Dialogue:</strong> 
+                        <strong>File: </strong><span style="font-family:San Francisco Mono,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New; font-size: 13px;">${result.filename}</span>
+                        <button class="small-btn" id="copy-btn-${result.id}" onclick="copyToClipboard('${result.filename}')">Copy</button><br><br>
+                        <strong>Dialogue: </strong> 
                         <span id="dialogue-${result.id}">${result.dialogue}</span>
                         <input type="text" class="edit-field" id="edit-dialogue-${result.id}" style="display:none;" value="${result.dialogue}">
                         <button class="small-btn" id="edit-btn-dialogue-${result.id}" onclick="editField('${result.id}', 'dialogue')">Edit</button>
-                        <button class="small-btn save-btn" id="save-btn-dialogue-${result.id}" onclick="saveChanges('${result.id}', 'dialogue')">Save</button><br><br>
-
-                        <strong>Character:</strong> 
+                        <button class="small-btn save-btn" id="save-btn-dialogue-${result.id}" onclick="saveChanges('${result.id}', 'dialogue')">Submit</button>
+                        <button class="small-btn cancel-btn" id="cancel-btn-dialogue-${result.id}" onclick="cancelEdit('${result.id}', 'dialogue')">Cancel</button><br><br>
+                        <strong>Character: </strong> 
                         <span id="character-${result.id}">${result.character}</span>
                         <input type="text" class="edit-field" id="edit-character-${result.id}" style="display:none;" value="${result.character}">
                         <button class="small-btn" id="edit-btn-character-${result.id}" onclick="editField('${result.id}', 'character')">Edit</button>
-                        <button class="small-btn save-btn" id="save-btn-character-${result.id}" onclick="saveChanges('${result.id}', 'character')">Save</button><br><br>
+                        <button class="small-btn save-btn" id="save-btn-character-${result.id}" onclick="saveChanges('${result.id}', 'character')">Submit</button>
+                        <button class="small-btn cancel-btn" id="cancel-btn-character-${result.id}" onclick="cancelEdit('${result.id}', 'character')">Cancel</button><br><br>
 
-                        <strong>Type:</strong> ${result.type}<br>
+                        <strong>Type: </strong>  ${result.type}<br>
                       `;
+
+                      // Only show buttons if Type does not contain 'Localization (Subtitled)'
+                      if (!result.type.includes('Localization (Subtitled)')) {
+                          resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Save button initially
+                          resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Cancel button initially
+                          resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none'; // Hide Save button initially
+                          resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none'; // Hide Cancel button initially
+                      } else {
+                          resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none';
+                          resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none';
+                      }
+
                       resultsDiv.appendChild(resultItem);
+
+                      // Append to CSV content
+                      csvContent += `${result.filename},"${result.dialogue}","${result.character}","${result.type}"\n`;
                   });
+
+                  // Log the CSV content to ensure it's correct
+                  console.log('CSV Content:', csvContent);
+
+                  // Create a Blob from the CSV content
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                  csvBlobUrl = URL.createObjectURL(blob); // Store the Blob URL for later use
+
+                  // Log the blob URL for debugging
+                  console.log('Blob URL:', csvBlobUrl);
+
+                  // Show the download button
+                  downloadButton.style.display = 'block'; // Show the button
+
+                  // Show feedback message
+                  feedbackMessage.innerText = "Search completed!";
+                  feedbackMessage.style.display = 'block';
+              })
+              .catch(error => {
+                  console.error('Error fetching search results:', error);
               });
         });
+
+        // Function to cancel edit
+        function cancelEdit(resultId, field) {
+            document.getElementById(field + '-' + resultId).style.display = 'inline'; // Show the original text
+            document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block'; // Show Edit button
+            document.getElementById('edit-' + field + '-' + resultId).style.display = 'none'; // Hide input field
+            document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Save button
+            document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Cancel button
+        }
+
+        // Event listener for the download button
+        document.getElementById('download-csv').addEventListener('click', function() {
+            if (csvBlobUrl) {
+                const tempLink = document.createElement('a');
+                tempLink.href = csvBlobUrl;
+                tempLink.download = 'search_results.csv';
+                document.body.appendChild(tempLink);
+                tempLink.click(); // Trigger the download
+                document.body.removeChild(tempLink); // Clean up
+
+                // Change button text after download
+                const downloadButton = document.getElementById('download-csv');
+                downloadButton.textContent = 'Downloaded Results!';
+            } else {
+                console.error('Download Failed');
+            }
+        });
+        
 
         // Function to handle editing
         function editField(resultId, field) {
             document.getElementById(field + '-' + resultId).style.display = 'none'; // Hide span text
             document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Edit button
 
-            // Show the input field and Save button
+            // Show the input field and Save and Cancel buttons
             document.getElementById('edit-' + field + '-' + resultId).style.display = 'inline-block';
             document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'inline-block';
+            document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'inline-block';
+            document.getElementById('copy-btn-' + field + '-' + resultId).style.display = 'inline-block';
         }
 
         // Function to handle saving
@@ -211,21 +409,32 @@
                 })
             }).then(response => response.text())
               .then(data => {
-                  alert('Update successful!');
+                  alert('Edit submitted for verification!');
 
                   // Show updated text and Edit button again
-                  document.getElementById(field + '-' + resultId).innerText = updatedValue;
+                  const revisionText = "  (revision submitted pending approval)";
+                  document.getElementById(field + '-' + resultId).innerHTML = updatedValue + '<span style="font-style: italic; font-weight: bold; font-size: 10px;">' + revisionText + '</span>';
                   document.getElementById(field + '-' + resultId).style.display = 'inline';
                   document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block';
 
-                  // Hide the input field and Save button
+                  // Hide the input field and Save and Cancel buttons
                   document.getElementById('edit-' + field + '-' + resultId).style.display = 'none';
                   document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'none';
+                  document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'none';
               }).catch(err => {
                   alert('Update failed.');
                   console.error(err);
               });
         }
+
+        function copyToClipboard(filename) {
+            navigator.clipboard.writeText(filename).then(() => {
+                alert(`Copied to clipboard.`);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+        });
+        }
+
     </script>
 </body>
 </html>
