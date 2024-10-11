@@ -31,7 +31,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 ### Usage Examples
 
-You can use both search boxes to execute more complex queries, e.g. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names. 
+You can use multiple search boxes to execute more complex queries, e.g. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names. I tried to impliment some boolean stuff but in all honesty I am terrible at coding and couldn't get it to work.
 
 'Type' refers to the type of dialogue. All Localization files have the type: 
   ```
