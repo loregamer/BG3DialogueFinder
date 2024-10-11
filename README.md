@@ -34,7 +34,9 @@ You can use both search boxes to execute more complex queries, e.g. searching â€
 
 <u>Planned Features</u>
 
- - Ability to download search results.
+ - Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.
+
+ - Add localizaton files missing from english.loca (likely cut content).
 
 
 <u>Special Thanks</u>
