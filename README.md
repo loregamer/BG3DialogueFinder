@@ -2,15 +2,15 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 # NoComply BG3 Dialogue Finder
 
-### Overview
+## Overview
  - Search Baldur’s Gate 3’s audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
  - Ability to edit some database entries to improve accuracy.
 
-### Installation
+## Installation
  - Online web app with edit feature <a href="https://bg3dialoguefinder.xyz/">here</a> (recommended).
  - Offline via Github: Just download, run app.py and copy the link provided by your terminal into your browser. I'll update the repo with the live database every week or so.
 
-### Use Cases
+## Use Cases
 
  - For modding dialogue audio in Baldur’s Gate 3.
 
