@@ -18,7 +18,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 ### Database Creation and Accuracy
  
-  Localization files are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. Character names were scraped from Pandora’s list of Voice UUIDs. There are some .wems in the directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database.
+  Localization files are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. Character names were scraped from Pandora’s list of Voice UUIDs. There are some .wems in the directory that are not used in english.loca - these may be cut content. At some point I will run them through Whisper and add them to the database.
 
   SharedSounds was harder:
 
@@ -26,7 +26,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
   • SharedSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. While endlessly useful, by the creator's own admission this database is not 100% accurate. These character names can be submitted for revision in the search results. 
 
-  • Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to submit for revision.
+  • Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to submit an edit on the web app.
 
 
 ### Usage Examples
