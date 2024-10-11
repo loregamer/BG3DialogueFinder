@@ -131,5 +131,5 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
 ## Changelog
 ```
 10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
-6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
+10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
 ```
