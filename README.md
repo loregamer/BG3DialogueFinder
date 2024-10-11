@@ -18,7 +18,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
 ### Database Creation and Accuracy
  
-  Localization are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the Localization directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
+  Localization are referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. There are some .wems in the directory that are not used in english.loca. These may be cut content. At some point I will run these through Whisper and add them to the database. Character names were scraped from Pandora’s list of Voice UUIDs. 
 
   SharedSounds files were harder:
 
