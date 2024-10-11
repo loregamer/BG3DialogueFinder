@@ -27,7 +27,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
   • SharedSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. While endlessly useful, by the creator's own admission this database is not 100% accurate. These character names can be submitted for revision in the search results. 
 
-  • Whisper will likely have printed garbled nonsense/bizarre sentences for any files in SharedSounds that don’t contain dialogue. If you find any of these feel free to submit an edit on the web app.
+  • ***For any files in SharedSounds that don’t contain dialogue, Whisper will likely have printed garbled nonsense/bizarre sentences.*** If you find any of these feel free to submit an edit on the web app. I've cleared out some already but with 200,000+ entries there will still be plenty.
 
 
 ### Usage Examples
