@@ -1,5 +1,3 @@
-WIP, not release ready. If you've stumbled across this, do not use yet. It will only mess up your project.
-
 # NoComply BG3 Dialogue Finder &emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="http://buymeacoffee.com/nocomply"><img src="https://github.com/user-attachments/assets/e6b8903e-75a3-4bae-a8bb-3ed593ae2133" alt="Buy me a coffee." width="162.6px" height="35.1px"></a>
 
 
@@ -23,13 +21,21 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
   SharedSounds was harder:
 
-  • There are no subtitles for these so I ran the whole directory through OpenAI Whisper Large model (compute time: 134 hours, my CPU is screaming at me). Accuracy for any of these files that contain dialogue should be 90-100%. 
+  • There are no subtitles for these so I ran the whole directory through OpenAI Whisper Large model (compute time: 141 hours, my CPU is screaming at me). Accuracy for any of these files that contain dialogue should be 90-100%. 
 
-  • SharedSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. While endlessly useful, by the creator's own admission this database is not 100% accurate. These character names can be submitted for revision in the search results. 
+  • SharedSounds character names are currently only added for the files listed in TealRabbit19’s Point-Click Dialogue Files Database. While endlessly useful, by the creator's own admission this database is not 100% exhaustive/accurate.
 
   • ***For any files in SharedSounds that don’t contain dialogue, Whisper will likely have printed garbled nonsense/bizarre sentences.*** If you find any of these feel free to submit an edit on the web app. I've cleared out some already but with 200,000+ entries there will still be plenty.
 
 It is not impossible that some files have been missed - I am far from the best at coding and pretty much everything was scraped/moved/imported using one thrown-together-at-2am python script or another. That being said, I'm pretty confident that it's all there.
+
+### Community Editing
+
+Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://bg3dialoguefinder.xyz/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct. 
+
+Abuse of the edit feature (multiple incorrect submissions, multiple submissions with bad spelling/grammar, trolling etc.) will result in an immediate IP ban.
+
+The offline version does not include an edit feature. If you want to make edits, either contribute to the project by using the web app or use any SQL database editor on your offline database.db file.
 
 ### Usage Examples
 
@@ -128,6 +134,7 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
 
 ## Changelog
 ```
+10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes. 
 10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
 10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
 ```
