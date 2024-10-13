@@ -89,10 +89,11 @@
             padding-left: 15px;
             padding-top: 15px;
             padding-bottom: 15px;
+            border-radius: 3px; /* Rounded corners */
             border: 1px solid #ddd;
             margin: 50px 0;
             line-height: 120%;
-            background-color: #002f5f;
+            background: linear-gradient(90deg, rgb(0, 35, 49) 0%, rgba(6,33,73,1) 100%);
             opacity: 0; /* Initially hidden */
             transition: opacity 1s; /* Smooth fade-in effect */
         }
@@ -105,6 +106,10 @@
         input[type="text"].edit-field {
             width: 75%;
             margin: 5px; /* Remove margin to avoid extra gaps */
+        }
+
+        .edit-field {
+            width: 28%;
         }
 
         .usage-notes {
@@ -136,6 +141,7 @@
         /* New rule to set strong text color to yellow */
         .result-item strong {
             color: #e98f09; /* Change text color to yellow for File, Dialogue, Character, and Type */
+            text-shadow: 0px 0px 3px #4a2d01;
         }
 
         /* Feedback message style */
@@ -211,18 +217,14 @@
         <h2><span style="font-size:20px">Usage Notes:</span></h2>
         <ul>
             <li><span style="font-size:15px"><strong>Use correct spelling and grammar when submitting edits.</strong> I verify all the edits, they won't update before I do this. I go through them every few days.</span></li>
-            <li><span style="font-size:15px">The edit function is not available for subtitled dialogue - these entries are 100% accurate.</span></li>
+            <li><span style="font-size:15px">If the edit function is not available for an entry, it's because the entry is verifiably 100% accurate.</span></li>
             <li><span style="font-size:15px">If you submit numerous edits that are wrong, have poor grammar, or if you abuse the edit function in any way, your IP will be banned from using the tool.</span></li>
             <li><span style="font-size:15px">If you think something is missing, try a different search function first and let me know second. Learn more about the accuracy of the database on <a href="https://github.com/NoComplyDev/BG3DialogueFinder"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
-            <li><span style="font-size:15px">Some of the files contain music. If you find any, feel free to add 'Music' as the character. I may add a notes section for music files at a later date.</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
-            <li><span style="font-size:15px">Placeholder</span></li>
+            <li><span style="font-size:15px">For an explaination of the 'Type' field and how to use it, visit <a href="https://github.com/NoComplyDev/BG3DialogueFinder"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
         </ul>
         <h2><span style="font-size:15px">Planned Updates:</span></h2>
         <ul>
             <li><span style="font-size:13px">Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.</span></li>
-            <li><span style="font-size:13px">Add localizaton files missing from english.loca (likely cut content).</span></li>
         </ul>
         <h2><span style="font-size:15px">Special Thanks:</span></h2>
         <ul>
@@ -230,9 +232,12 @@
             <li><span style="font-size:13px"><strong>TealRabbit19</strong> (Nexus), for their extraordinary labour of love in manually creating their Dialogue Files Database. Your patience astounds me.</span></li>
             <li><span style="font-size:13px"><strong>Larian Studios</strong>, for their support of the modding community.</span></li>
         </ul>
+
         <h2><span style="font-size:15px">Changelog:</span></h2>
+        <p><span style="font-size:10px">10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes.</span></p>
         <p><span style="font-size:10px">10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.</span></p>
-        <span style="font-size:10px">6/10/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span>
+        <p><span style="font-size:10px">10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span></p><br>
+        <a href="https://buymeacoffee.com/nocomply"><img src="https://i.ibb.co/PFbRk2t/bmac.png" alt="Buy Me A Coffee." width="162.6px" height="35.1px"></a>
     </div>
 
     <script>
@@ -284,6 +289,9 @@
                   // Log the fetched data
                   console.log('Search Results:', data);
 
+                  // Count the number of results
+                  const resultCount = data.length;
+
                   // Prepare CSV data
                   let csvContent = "Filename,Dialogue,Character,Type\n"; // CSV header
 
@@ -293,40 +301,136 @@
                       resultItem.innerHTML = `
                         <strong>File: </strong><span style="font-family:San Francisco Mono,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New; font-size: 13px;">${result.filename}</span>
                         <button class="small-btn" id="copy-btn-${result.id}" onclick="copyToClipboard('${result.filename}')">Copy</button><br><br>
-                        <strong>Dialogue: </strong> 
-                        <span id="dialogue-${result.id}">${result.dialogue}</span>
+
+                        <strong>Dialogue: </strong><span id="dialogue-${result.id}">${result.dialogue == 'Unknown' ? '<span style="color:red">Unknown</span>' : result.dialogue}</span>
                         <input type="text" class="edit-field" id="edit-dialogue-${result.id}" style="display:none;" value="${result.dialogue}">
+
                         <button class="small-btn" id="edit-btn-dialogue-${result.id}" onclick="editField('${result.id}', 'dialogue')">Edit</button>
                         <button class="small-btn save-btn" id="save-btn-dialogue-${result.id}" onclick="saveChanges('${result.id}', 'dialogue')">Submit</button>
                         <button class="small-btn cancel-btn" id="cancel-btn-dialogue-${result.id}" onclick="cancelEdit('${result.id}', 'dialogue')">Cancel</button><br><br>
-                        <strong>Character: </strong> 
-                        <span id="character-${result.id}">${result.character}</span>
+                        
+                        <strong>Character: </strong><span id="character-${result.id}">${result.character == 'Unknown' ? '<span style="color:red">Unknown</span>' : result.character}</span>
                         <input type="text" class="edit-field" id="edit-character-${result.id}" style="display:none;" value="${result.character}">
                         <button class="small-btn" id="edit-btn-character-${result.id}" onclick="editField('${result.id}', 'character')">Edit</button>
                         <button class="small-btn save-btn" id="save-btn-character-${result.id}" onclick="saveChanges('${result.id}', 'character')">Submit</button>
                         <button class="small-btn cancel-btn" id="cancel-btn-character-${result.id}" onclick="cancelEdit('${result.id}', 'character')">Cancel</button><br><br>
 
-                        <strong>Type: </strong>  ${result.type}<br>
+                        <strong>Type: </strong><span id="type-${result.id}">${result.type == 'Unknown' ? '<span style="color:red">Unknown</span>' : result.type}</span>
+                        <select class="edit-field" id="edit-type-${result.id}" style="display:none;">
+                            <option value="Miscellaneous" ${result.type === 'Miscellaneous' ? 'selected' : ''}>Miscellaneous</option>
+                            <option value="Music / Background" ${result.type === 'Music / Background' ? 'selected' : ''}>Music / Background</option>
+                            <option value="-" ${result.type === '-' ? 'selected' : ''}>-</option>
+                            <option value="Action_Attack" ${result.type === 'Action_Attack' ? 'selected' : ''}>Action_Attack</option>
+                            <option value="Action_Attack Stealth" ${result.type === 'Action_Attack Stealth' ? 'selected' : ''}>Action_Attack Stealth</option>
+                            <option value="Action_BuffTarget" ${result.type === 'Action_BuffTarget' ? 'selected' : ''}>Action_BuffTarget</option>
+                            <option value="Action_BuffTarget Negative" ${result.type === 'Action_BuffTarget Negative' ? 'selected' : ''}>Action_BuffTarget Negative</option>
+                            <option value="Action_BuffTarget Positive" ${result.type === 'Action_BuffTarget Positive' ? 'selected' : ''}>Action_BuffTarget Positive</option>
+                            <option value="Action_BuffTarget Romance" ${result.type === 'Action_BuffTarget Romance' ? 'selected' : ''}>Action_BuffTarget Romance</option>
+                            <option value="Action_BuffTarget Stealth" ${result.type === 'Action_BuffTarget Stealth' ? 'selected' : ''}>Action_BuffTarget Stealth</option>
+                            <option value="Action_BuffTarget Stealth Negative" ${result.type === 'Action_BuffTarget Stealth Negative' ? 'selected' : ''}>Action_BuffTarget Stealth Negative</option>
+                            <option value="Action_BuffTarget Stealth Positive" ${result.type === 'Action_BuffTarget Stealth Positive' ? 'selected' : ''}>Action_BuffTarget Stealth Positive</option>
+                            <option value="Action BuffTarget Stealth Romance" ${result.type === 'Action BuffTarget Stealth Romance' ? 'selected' : ''}>Action BuffTarget Stealth Romance</option>
+                            <option value="Action_Dip" ${result.type === 'Action_Dip' ? 'selected' : ''}>Action_Dip</option>
+                            <option value="Action_Dip Combat" ${result.type === 'Action_Dip Combat' ? 'selected' : ''}>Action_Dip Combat</option>
+                            <option value="Action_Dip Stealth" ${result.type === 'Action_Dip Stealth' ? 'selected' : ''}>Action_Dip Stealth</option>
+                            <option value="Action_HealTarget" ${result.type === 'Action_HealTarget' ? 'selected' : ''}>Action_HealTarget</option>
+                            <option value="Action_HealTarget Negative" ${result.type === 'Action_HealTarget Negative' ? 'selected' : ''}>Action_HealTarget Negative</option>
+                            <option value="Action_HealTarget Positive" ${result.type === 'Action_HealTarget Positive' ? 'selected' : ''}>Action_HealTarget Positive</option>
+                            <option value="Action_HealTarget Romance" ${result.type === 'Action_HealTarget Romance' ? 'selected' : ''}>Action_HealTarget Romance</option>
+                            <option value="Action_HealTarget Stealth" ${result.type === 'Action_HealTarget Stealth' ? 'selected' : ''}>Action_HealTarget Stealth</option>
+                            <option value="Action_HealTarget Stealth Negative" ${result.type === 'Action_HealTarget Stealth Negative' ? 'selected' : ''}>Action_HealTarget Stealth Negative</option>
+                            <option value="Action_HealTarget Stealth Positive" ${result.type === 'Action_HealTarget Stealth Positive' ? 'selected' : ''}>Action_HealTarget Stealth Positive</option>
+                            <option value="Action_HealTarget Stealth Romance" ${result.type === 'Action_HealTarget Stealth Romance' ? 'selected' : ''}>Action_HealTarget Stealth Romance</option>
+                            <option value="Action_HelpGeneric" ${result.type === 'Action_HelpGeneric' ? 'selected' : ''}>Action_HelpGeneric</option>
+                            <option value="Action_HelpGeneric Negative" ${result.type === 'Action_HelpGeneric Negative' ? 'selected' : ''}>Action_HelpGeneric Negative</option>
+                            <option value="Action_HelpGeneric Positive" ${result.type === 'Action_HelpGeneric Positive' ? 'selected' : ''}>Action_HelpGeneric Positive</option>
+                            <option value="Action_HelpGeneric Romance" ${result.type === 'Action_HelpGeneric Romance' ? 'selected' : ''}>Action_HelpGeneric Romance</option>
+                            <option value="Action_HelpGeneric Stealth" ${result.type === 'Action_HelpGeneric Stealth' ? 'selected' : ''}>Action_HelpGeneric Stealth</option>
+                            <option value="Action_HelpGeneric Stealth Negative" ${result.type === 'Action_HelpGeneric Stealth Negative' ? 'selected' : ''}>Action_HelpGeneric Stealth Negative</option>
+                            <option value="Action_HelpGeneric Stealth Positive" ${result.type === 'Action_HelpGeneric Stealth Positive' ? 'selected' : ''}>Action_HelpGeneric Stealth Positive</option>
+                            <option value="Action_HelpGeneric Stealth Romance" ${result.type === 'Action_HelpGeneric Stealth Romance' ? 'selected' : ''}>Action_HelpGeneric Stealth Romance</option>
+                            <option value="Action_HelpImmobilized" ${result.type === 'Action_HelpImmobilized' ? 'selected' : ''}>Action_HelpImmobilized</option>
+                            <option value="Action_HelpImmobilized Negative" ${result.type === 'Action_HelpImmobilized Negative' ? 'selected' : ''}>Action_HelpImmobilized Negative</option>
+                            <option value="Action_HelpImmobilized Positive" ${result.type === 'Action_HelpImmobilized Positive' ? 'selected' : ''}>Action_HelpImmobilized Positive</option>
+                            <option value="Action_HelpImmobilized Romance" ${result.type === 'Action_HelpImmobilized Romance' ? 'selected' : ''}>Action_HelpImmobilized Romance</option>
+                            <option value="Action_HelpImmobilized Stealth" ${result.type === 'Action_HelpImmobilized Stealth' ? 'selected' : ''}>Action_HelpImmobilized Stealth</option>
+                            <option value="Action_HelpImmobilized Stealth Negative" ${result.type === 'Action_HelpImmobilized Stealth Negative' ? 'selected' : ''}>Action_HelpImmobilized Stealth Negative</option>
+                            <option value="Action_HelpImmobilized Stealth Positive" ${result.type === 'Action_HelpImmobilized Stealth Positive' ? 'selected' : ''}>Action_HelpImmobilized Stealth Positive</option>
+                            <option value="Action_HelpImmobilized Stealth Romance" ${result.type === 'Action_HelpImmobilized Stealth Romance' ? 'selected' : ''}>Action_HelpImmobilized Stealth Romance</option>
+                            <option value="Action_InteractWith" ${result.type === 'Action_InteractWith' ? 'selected' : ''}>Action_InteractWith</option>
+                            <option value="Action_InteractWith Combat" ${result.type === 'Action_InteractWith Combat' ? 'selected' : ''}>Action_InteractWith Combat</option>
+                            <option value="Action_InteractWith Stealth" ${result.type === 'Action_InteractWith Stealth' ? 'selected' : ''}>Action_InteractWith Stealth</option>
+                            <option value="Action_ItemPickup" ${result.type === 'Action_ItemPickup' ? 'selected' : ''}>Action_ItemPickup</option>
+                            <option value="Action_ItemPickup Stealth" ${result.type === 'Action_ItemPickup Stealth' ? 'selected' : ''}>Action_ItemPickup Stealth</option>
+                            <option value="Action_OpenContainer" ${result.type === 'Action_OpenContainer' ? 'selected' : ''}>Action_OpenContainer</option>
+                            <option value="Action_OpenContainer Combat" ${result.type === 'Action_OpenContainer Combat' ? 'selected' : ''}>Action_OpenContainer Combat</option>
+                            <option value="Action_OpenContainer Stealth" ${result.type === 'Action_OpenContainer Stealth' ? 'selected' : ''}>Action_OpenContainer Stealth</option>
+                            <option value="Action_OpenLock" ${result.type === 'Action_OpenLock' ? 'selected' : ''}>Action_OpenLock</option>
+                            <option value="Action_OpenLock Combat" ${result.type === 'Action_OpenLock Combat' ? 'selected' : ''}>Action_OpenLock Combat</option>
+                            <option value="Action_OpenLock Stealth" ${result.type === 'Action_OpenLock Stealth' ? 'selected' : ''}>Action_OpenLock Stealth</option>
+                            <option value="Action_PickPocket" ${result.type === 'Action_PickPocket' ? 'selected' : ''}>Action_PickPocket</option>
+                            <option value="Action_SpeakTo" ${result.type === 'Action_SpeakTo' ? 'selected' : ''}>Action_SpeakTo</option>
+                            <option value="Action_SpeakTo Negative" ${result.type === 'Action_SpeakTo Negative' ? 'selected' : ''}>Action_SpeakTo Negative</option>
+                            <option value="Action_SpeakTo Positive" ${result.type === 'Action_SpeakTo Positive' ? 'selected' : ''}>Action_SpeakTo Positive</option>
+                            <option value="Action_SpeakTo Stealth" ${result.type === 'Action_SpeakTo Stealth' ? 'selected' : ''}>Action_SpeakTo Stealth</option>
+                            <option value="Action_SpeakTo Stealth Negative" ${result.type === 'Action_SpeakTo Stealth Negative' ? 'selected' : ''}>Action_SpeakTo Stealth Negative</option>
+                            <option value="Action_SpeakTo Stealth Positive" ${result.type === 'Action_SpeakTo Stealth Positive' ? 'selected' : ''}>Action_SpeakTo Stealth Positive</option>
+                            <option value="Action_Utility" ${result.type === 'Action_Utility' ? 'selected' : ''}>Action_Utility</option>
+                            <option value="Action_Utility Combat" ${result.type === 'Action_Utility Combat' ? 'selected' : ''}>Action_Utility Combat</option>
+                            <option value="Action_Utility Stealth" ${result.type === 'Action_Utility Stealth' ? 'selected' : ''}>Action_Utility Stealth</option>
+                            <option value="ReptAction_HideSuccess" ${result.type === 'ReptAction_HideSuccess' ? 'selected' : ''}>ReptAction_HideSuccess</option>
+                            <option value="ReptAction_MoveTo" ${result.type === 'ReptAction_MoveTo' ? 'selected' : ''}>ReptAction_MoveTo</option>
+                            <option value="ReptAction_PickPocketSuccess" ${result.type === 'ReptAction_PickPocketSuccess' ? 'selected' : ''}>ReptAction_PickPocketSuccess</option>
+                            <option value="ReptAction_PickPocketSuccess Combat" ${result.type === 'ReptAction_PickPocketSuccess Combat' ? 'selected' : ''}>ReptAction_PickPocketSuccess Combat</option>
+                            <option value="ReptAction_PortraitClick" ${result.type === 'ReptAction_PortraitClick' ? 'selected' : ''}>ReptAction_PortraitClick</option>
+                            <option value="ReptAction_PortraitClick Combat" ${result.type === 'ReptAction_PortraitClick Combat' ? 'selected' : ''}>ReptAction_PortraitClick Combat</option>
+                            <option value="ReptAction_PortraitClick Stealth" ${result.type === 'ReptAction_PortraitClick Stealth' ? 'selected' : ''}>ReptAction_PortraitClick Stealth</option>
+                            <option value="ReptAction_PortraitClickDowned" ${result.type === 'ReptAction_PortraitClickDowned' ? 'selected' : ''}>ReptAction_PortraitClickDowned</option>
+                            <option value="ReptAction_PortraitClickSpam" ${result.type === 'ReptAction_PortraitClickSpam' ? 'selected' : ''}>ReptAction_PortraitClickSpam</option>
+                            <option value="ReptAction_PortraitClickSpam Stealth" ${result.type === 'ReptAction_PortraitClickSpam Stealth' ? 'selected' : ''}>ReptAction_PortraitClickSpam Stealth</option>
+                        </select>
+                        <button class="small-btn" id="edit-btn-type-${result.id}" onclick="editField('${result.id}', 'type')">Edit</button>
+                        <button class="small-btn save-btn" id="save-btn-type-${result.id}" onclick="saveChanges('${result.id}', 'type')">Submit</button>
+                        <button class="small-btn cancel-btn" id="cancel-btn-type-${result.id}" onclick="cancelEdit('${result.id}', 'type')">Cancel</button><br>
                       `;
-
-                      // Only show buttons if Type does not contain 'Localization (Subtitled)'
-                      if (!result.type.includes('Localization (Subtitled)')) {
-                          resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Save button initially
-                          resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Cancel button initially
-                          resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none'; // Hide Save button initially
-                          resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none'; // Hide Cancel button initially
+                      
+                      if (result.type.includes('Localization (Subtitled)')) {
+                        
+                        resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
+                        resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#edit-btn-type-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none';
+                      } else if (result.type.includes('English.loca')) {
+                        
+                        resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
+                        resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#edit-btn-type-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none';
                       } else {
-                          resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none';
-                          resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none';
-                      }
+                        
+                        resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
+                        resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
+                        resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#edit-btn-type-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none'; 
+                      }         
 
                       resultsDiv.appendChild(resultItem);
 
@@ -345,14 +449,20 @@
                   console.log('Blob URL:', csvBlobUrl);
 
                   // Show the download button
+                  if (resultCount > 0) {
                   downloadButton.style.display = 'block'; // Show the button
+                }
 
-                  // Show feedback message
-                  feedbackMessage.innerText = "Search completed!";
+                  // Show feedback message with the number of results
+                  feedbackMessage.innerText = `${resultCount} result(s) found.`;
                   feedbackMessage.style.display = 'block';
               })
               .catch(error => {
                   console.error('Error fetching search results:', error);
+
+                  // Show error message in the feedback
+                    feedbackMessage.innerText = 'Error fetching search results.';
+                    feedbackMessage.style.display = 'block';
               });
         });
 
@@ -386,45 +496,73 @@
 
         // Function to handle editing
         function editField(resultId, field) {
-            document.getElementById(field + '-' + resultId).style.display = 'none'; // Hide span text
-            document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Edit button
+            if (field === 'type') {
+                document.getElementById('type-' + resultId).style.display = 'none'; // Hide span text
+                document.getElementById('edit-btn-type-' + resultId).style.display = 'none'; // Hide Edit button
 
-            // Show the input field and Save and Cancel buttons
-            document.getElementById('edit-' + field + '-' + resultId).style.display = 'inline-block';
-            document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'inline-block';
-            document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'inline-block';
-            document.getElementById('copy-btn-' + field + '-' + resultId).style.display = 'inline-block';
+                // Show the dropdown and Save and Cancel buttons
+                document.getElementById('edit-type-' + resultId).style.display = 'inline-block';
+                document.getElementById('save-btn-type-' + resultId).style.display = 'inline-block';
+                document.getElementById('cancel-btn-type-' + resultId).style.display = 'inline-block';
+        } else {
+                // Existing edit handling for Dialogue and Character
+                document.getElementById(field + '-' + resultId).style.display = 'none'; // Hide span text
+                document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'none'; // Hide Edit button
+
+                // Show the input field and Save and Cancel buttons
+                document.getElementById('edit-' + field + '-' + resultId).style.display = 'inline-block';
+                document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'inline-block';
+                document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'inline-block';
         }
+    }
 
         // Function to handle saving
         function saveChanges(resultId, field) {
-            const updatedValue = document.getElementById('edit-' + field + '-' + resultId).value;
+            let updatedValue;
+            if (field === 'type') {
+                updatedValue = document.getElementById('edit-type-' + resultId).value;
+            } else {
+                updatedValue = document.getElementById('edit-' + field + '-' + resultId).value;
+            }
 
-            fetch('/update_entry', {
+        fetch('/update_entry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({
                     id: resultId,
                     [field]: updatedValue // Send the updated field value
                 })
-            }).then(response => response.text())
-              .then(data => {
-                  alert('Edit submitted for verification!');
+        }).then(response => response.text())
+            .then(data => {
+                alert('Edit submitted for verification!');
 
-                  // Show updated text and Edit button again
-                  const revisionText = "  (revision submitted pending approval)";
-                  document.getElementById(field + '-' + resultId).innerHTML = updatedValue + '<span style="font-style: italic; font-weight: bold; font-size: 10px;">' + revisionText + '</span>';
-                  document.getElementById(field + '-' + resultId).style.display = 'inline';
-                  document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block';
+          // Update the displayed value for Type
+          if (field === 'type') {
+              const revisionText = "  (revision submitted pending approval)";
+              document.getElementById(field + '-' + resultId).innerHTML = updatedValue + '<span style="font-style: italic; font-weight: bold; font-size: 10px; color:#e98f09;">' + revisionText + '</span>';
+              document.getElementById(field + '-' + resultId).style.display = 'inline';
+              document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block';
+              
+              // Hide the dropdown and Save and Cancel buttons
+              document.getElementById('edit-type-' + resultId).style.display = 'none';
+              document.getElementById('save-btn-type-' + resultId).style.display = 'none';
+              document.getElementById('cancel-btn-type-' + resultId).style.display = 'none';
+          } else {
+              // Existing update handling for Dialogue and Character
+              const revisionText = "  (revision submitted pending approval)";
+              document.getElementById(field + '-' + resultId).innerHTML = updatedValue + '<span style="font-style: italic; font-weight: bold; font-size: 10px; color:#e98f09;">' + revisionText + '</span>';
+              document.getElementById(field + '-' + resultId).style.display = 'inline';
+              document.getElementById('edit-btn-' + field + '-' + resultId).style.display = 'inline-block';
 
-                  // Hide the input field and Save and Cancel buttons
-                  document.getElementById('edit-' + field + '-' + resultId).style.display = 'none';
-                  document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'none';
-                  document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'none';
-              }).catch(err => {
-                  alert('Update failed.');
-                  console.error(err);
-              });
+              // Hide the input field and Save and Cancel buttons
+              document.getElementById('edit-' + field + '-' + resultId).style.display = 'none';
+              document.getElementById('save-btn-' + field + '-' + resultId).style.display = 'none';
+              document.getElementById('cancel-btn-' + field + '-' + resultId).style.display = 'none';
+          }
+      }).catch(err => {
+          alert('Update failed.');
+          console.error(err);
+      });
         }
 
         function copyToClipboard(filename) {
