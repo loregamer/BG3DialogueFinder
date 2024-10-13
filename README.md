@@ -29,6 +29,7 @@ WIP, not release ready. If you've stumbled across this, do not use yet. It will 
 
   • ***For any files in SharedSounds that don’t contain dialogue, Whisper will likely have printed garbled nonsense/bizarre sentences.*** If you find any of these feel free to submit an edit on the web app. I've cleared out some already but with 200,000+ entries there will still be plenty.
 
+It is not impossible that some files have been missed - I am far from the best at coding and pretty much everything was scraped/moved/imported using one thrown-together-at-2am python script or another. That being said, I'm pretty confident that it's all there.
 
 ### Usage Examples
 
