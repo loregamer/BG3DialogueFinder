@@ -35,9 +35,10 @@ It is not impossible that some files have been missed - I am far from the best a
 
 You can use multiple search boxes to execute more complex queries, e.g. searching ‘Astarion’ in Characters and ‘tadpole’ in Dialogue will return all instances of Astarion saying tadpole. These work together as ‘and’ functions, not ‘or’ functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names.
 
-'Type' refers to the type of dialogue. All Localization files have the type: 
+'Type' refers to the type of dialogue. Localization files have two types: 
   ```
   Localization (Subtitled)
+  Localization - Not In English.loca
   ```
 
 For the types in SharedSounds, I have referred to the resource identifiers in /[PAK]_Vocals/_merged.lsf. They are as follows:
