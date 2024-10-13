@@ -5,6 +5,14 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Secret key needed for session handling
 
+ #ip_ban_list = ['127.0.0.2']
+
+ #@app.before_request
+ #def block_method():
+    #ip = request.environ.get('REMOTE_ADDR')
+    #if ip in ip_ban_list:
+       # abort(403)
+
 # Database path handling
 db_path = os.path.join(os.path.dirname(__file__), 'database.db')
 
@@ -87,15 +95,13 @@ def multi_search():
             'id': row['id'],
             'filename': row['filename'],
             'dialogue': row['dialogue'] if (row['dialogue'] is not None and row['dialogue'].strip() != '') else 'Unknown',
-            'character': row['character'] if (row['character'] is not None and row['dialogue'].strip() != '') else 'Unknown',
-            'type': row['type'] if (row['type'] is not None and row['dialogue'].strip() != '') else 'Unknown',
+            'character': row['character'] if (row['character'] is not None and row['character'].strip() != '') else 'Unknown',
+            'type': row['type'] if (row['type'] is not None and row['type'].strip() != '') else 'Unknown',
         })
 
     conn.close()
     return jsonify(data)
 
-# BELOW IS LARGELY ONLINE-ONLY FEATURES
-
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True, port=36000, host='0.0.0.0')
+    app.run(debug=True, port=34611, host='0.0.0.0')
