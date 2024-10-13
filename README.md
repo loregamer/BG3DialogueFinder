@@ -119,9 +119,6 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
 
  - Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.
 
- - Add localizaton files missing from english.loca (likely cut content).
-
-
 ## Special Thanks
 
  - **Pandora (Nexus)**, for their list of Voice UUIDs. Invaluable.
