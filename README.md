@@ -134,6 +134,7 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
 
 ## Changelog
 ```
+10/13/24 - V1.0.1 - Fixed exception when search returned null values.
 10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes. 
 10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
 10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
