@@ -112,7 +112,7 @@ For the types in SharedSounds, I have referred to the resource identifiers in /[
   ReptAction_PortraitClickSpam
   ReptAction_PortraitClickSpam Stealth
   ```
-Sometimes these have character-specific modifiers appended such as `(Durge)` for dark urge-specific lines. These are not currently available to select in the edit dropdown as the use-cases are fairly limited, but I may get around to it eventually.
+Sometimes these have character-specific modifiers appended such as `(Durge)` for dark urge-specific lines. These are not currently available to select in the edit dropdown as the use cases are fairly limited, but I may get around to it eventually.
 
   
 ## Planned Features
