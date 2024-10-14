@@ -217,10 +217,10 @@
         <h2><span style="font-size:20px">Usage Notes:</span></h2>
         <ul>
             <li><span style="font-size:15px"><strong>Use correct spelling and grammar when submitting edits.</strong> I verify all the edits, they won't update before I do this. I go through them every few days.</span></li>
-            <li><span style="font-size:15px">If the edit function is not available for an entry, it's because the entry is verifiably 100% accurate.</span></li>
+            <li><span style="font-size:15px">If the edit function is not available for an entry, it's because the dialogue was scraped directly from subtitles and should be 100% accurate already. If you find one of these with a mistake, let me know on Nexus or Github.</span></li>
             <li><span style="font-size:15px">If you submit numerous edits that are wrong, have poor grammar, or if you abuse the edit function in any way, your IP will be banned from using the tool.</span></li>
-            <li><span style="font-size:15px">If you think something is missing, try a different search function first and let me know second. Learn more about the accuracy of the database on <a href="https://github.com/NoComplyDev/BG3DialogueFinder"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
-            <li><span style="font-size:15px">For an explaination of the 'Type' field and how to use it, visit <a href="https://github.com/NoComplyDev/BG3DialogueFinder"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
+            <li><span style="font-size:15px">If you think something is missing, try a different search function first and let me know second. Learn more about the accuracy of the database on <a href="https://github.com/NoComplyDev/BG3DialogueFinder?tab=readme-ov-file#database-creation-and-accuracy"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
+            <li><span style="font-size:15px">For an explaination of the 'Type' field and how to use it, visit <a href="https://github.com/NoComplyDev/BG3DialogueFinder?tab=readme-ov-file#usage-examples"><strong><span style="text-decoration:underline";>Github</span></strong></a>.</span></li>
         </ul>
         <h2><span style="font-size:15px">Planned Updates:</span></h2>
         <ul>
@@ -234,6 +234,7 @@
         </ul>
 
         <h2><span style="font-size:15px">Changelog:</span></h2>
+        <p><span style="font-size:10px">10/13/24 - V1.0.1 - Fixed exception when search returned null values.</span></p>
         <p><span style="font-size:10px">10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes.</span></p>
         <p><span style="font-size:10px">10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.</span></p>
         <p><span style="font-size:10px">10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented.</span></p><br>
@@ -395,7 +396,7 @@
                       `;
                       
                       if (result.type.includes('Localization (Subtitled)')) {
-                        
+                        // If it's 'Localization (Subtitled)', hide all buttons
                         resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
                         resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
                         resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none';
@@ -407,11 +408,11 @@
                         resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none';
                         resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none';
                       } else if (result.type.includes('English.loca')) {
-                        
+                        // If it's 'English.loca', hide all edit buttons but show the copy button
                         resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
                         resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
-                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Save button initially
+                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Cancel button initially
                         resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
                         resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none';
                         resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none';
@@ -419,17 +420,17 @@
                         resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none';
                         resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none';
                       } else {
-                        
+                        // Show all buttons for other types
                         resultItem.querySelector(`#copy-btn-${result.id}`).style.display = 'inline-block';
                         resultItem.querySelector(`#edit-btn-dialogue-${result.id}`).style.display = 'none';
-                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#save-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Save button initially
+                        resultItem.querySelector(`#cancel-btn-dialogue-${result.id}`).style.display = 'none'; // Hide Cancel button initially
                         resultItem.querySelector(`#edit-btn-character-${result.id}`).style.display = 'none';
-                        resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#edit-btn-type-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none'; 
-                        resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none'; 
+                        resultItem.querySelector(`#save-btn-character-${result.id}`).style.display = 'none'; // Hide Save button initially
+                        resultItem.querySelector(`#cancel-btn-character-${result.id}`).style.display = 'none'; // Hide Cancel button initially
+                        resultItem.querySelector(`#edit-btn-type-${result.id}`).style.display = 'none'; // Show Edit button for Type
+                        resultItem.querySelector(`#save-btn-type-${result.id}`).style.display = 'none'; // Hide Save button initially
+                        resultItem.querySelector(`#cancel-btn-type-${result.id}`).style.display = 'none'; // Hide Cancel button initially
                       }         
 
                       resultsDiv.appendChild(resultItem);

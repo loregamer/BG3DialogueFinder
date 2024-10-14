@@ -5,14 +5,6 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Secret key needed for session handling
 
- #ip_ban_list = ['127.0.0.2']
-
- #@app.before_request
- #def block_method():
-    #ip = request.environ.get('REMOTE_ADDR')
-    #if ip in ip_ban_list:
-       # abort(403)
-
 # Database path handling
 db_path = os.path.join(os.path.dirname(__file__), 'database.db')
 
