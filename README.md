@@ -10,7 +10,7 @@ Work In Progress. Currently extremely buggy. Use with caution. Web app currently
  - Ability for the community to edit database entries to improve accuracy.
 
 ## Installation
- - Online web app with edit feature <a href="https://bg3dialoguefinder.xyz/">here</a> (recommended).
+ - Online web app with edit feature <a href="https://nocomplydev.pythonanywhere.com/">here</a> (recommended).
  - Offline via Github: Just download, run app.py and copy the link provided by your terminal into your browser. I'll update the repo with the live database every week or so.
 
 ## Use Cases
@@ -35,7 +35,7 @@ It is not impossible that some files have been missed - I am far from the best a
 
 ### Community Editing
 
-Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://bg3dialoguefinder.xyz/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct. 
+Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://nocomplydev.pythonanywhere.com/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct. 
 
 Abuse of the edit feature (multiple incorrect submissions, multiple submissions with bad spelling/grammar, trolling etc.) will result in an immediate IP ban.
 
