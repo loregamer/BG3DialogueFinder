@@ -1,3 +1,6 @@
+Work In Progress. Currently extremely buggy. Use with caution.
+
+
 # NoComply BG3 Dialogue Finder &emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="http://buymeacoffee.com/nocomply"><img src="https://github.com/user-attachments/assets/e6b8903e-75a3-4bae-a8bb-3ed593ae2133" alt="Buy me a coffee." width="162.6px" height="35.1px"></a>
 
 
