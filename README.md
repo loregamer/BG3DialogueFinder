@@ -3,10 +3,11 @@
 
 ## Overview
  - Search Baldur’s Gate 3’s audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
+ - Download results in .csv format.
  - Ability for the community to edit database entries to improve accuracy.
 
 ## Installation
- - Online web app with edit feature <a href="https://bg3dialoguefinder.xyz/">here</a> (recommended).
+ - Online web app with edit feature <a href="https://nocomplydev.pythonanywhere.com/">here</a> (recommended).
  - Offline via Github: Just download, run app.py and copy the link provided by your terminal into your browser. I'll update the repo with the live database every week or so.
 
 ## Use Cases
@@ -31,7 +32,7 @@ It is not impossible that some files have been missed - I am far from the best a
 
 ### Community Editing
 
-Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://bg3dialoguefinder.xyz/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct. 
+Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://nocomplydev.pythonanywhere.com/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct. 
 
 Abuse of the edit feature (multiple incorrect submissions, multiple submissions with bad spelling/grammar, trolling etc.) will result in an immediate IP ban.
 
@@ -134,6 +135,7 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
 
 ## Changelog
 ```
+10/13/24 - V1.0.1 - Fixed exception when search returned null values.
 10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes. 
 10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
 10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
