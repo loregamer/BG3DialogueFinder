@@ -6,6 +6,7 @@ Work In Progress. Currently extremely buggy. Use with caution. Web app currently
 
 ## Overview
  - Search Baldur’s Gate 3’s audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
+ - Download your results in .csv format.
  - Ability for the community to edit database entries to improve accuracy.
 
 ## Installation
