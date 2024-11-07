@@ -124,7 +124,11 @@ Sometimes these have character-specific modifiers appended such as `(Durge)` for
   
 ## Planned Features
 
+Updates will only be worked on if and when the tool is in regular, active use by community members. 
+
  - Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.
+ - Add editable, searchable 'Notes' section for database entries.
+ - (Long-term) Inject local database changes either directly into english.loca OR create english.xml mod file with local changes. Useful for easy subtitle creation when replacing dialogue with original lines. 
 
 ## Special Thanks
 
