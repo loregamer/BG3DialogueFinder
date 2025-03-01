@@ -41,8 +41,15 @@ class BG3DialogueFinderApp:
         self.status_text = tk.StringVar(value="Ready")
         self.progress_value = tk.DoubleVar(value=0.0)
         
+        # Sorting variables
+        self.sort_column = None
+        self.sort_reverse = False
+        
         # Create UI
         self.create_ui()
+        
+        # Create context menu for copying
+        self.create_context_menu()
     
     def create_ui(self):
         # Main frame
@@ -118,7 +125,11 @@ class BG3DialogueFinderApp:
         self.search_button.pack(side=tk.LEFT, padx=(0, 5))
         
         self.copy_button = ttk.Button(button_frame, text="Copy Files", command=self.copy_files)
-        self.copy_button.pack(side=tk.LEFT)
+        self.copy_button.pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Add a button to copy selected row data
+        self.copy_selected_button = ttk.Button(button_frame, text="Copy Selected", command=self.copy_selected_row)
+        self.copy_selected_button.pack(side=tk.LEFT)
         
         # Progress bar
         self.progress_frame = ttk.Frame(main_frame)
@@ -135,14 +146,11 @@ class BG3DialogueFinderApp:
         
         # Create treeview for results
         columns = ('filename', 'dialogue', 'character', 'type', 'status')
-        self.tree = ttk.Treeview(results_frame, columns=columns, show='headings')
+        self.tree = ttk.Treeview(results_frame, columns=columns, show='headings', selectmode='extended')
         
-        # Define headings
-        self.tree.heading('filename', text='Filename')
-        self.tree.heading('dialogue', text='Dialogue')
-        self.tree.heading('character', text='Character')
-        self.tree.heading('type', text='Type')
-        self.tree.heading('status', text='Status')
+        # Define headings with sorting capability
+        for col in columns:
+            self.tree.heading(col, text=col.capitalize(), command=lambda _col=col: self.sort_treeview(_col))
         
         # Define columns
         self.tree.column('filename', width=150)
@@ -161,6 +169,10 @@ class BG3DialogueFinderApp:
         scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
         self.tree.pack(fill=tk.BOTH, expand=True)
         
+        # Bind double-click and right-click events
+        self.tree.bind("<Double-1>", self.on_double_click)
+        self.tree.bind("<Button-3>", self.show_context_menu)
+        
         # Status bar
         status_bar = ttk.Label(self.root, textvariable=self.status_text, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -170,6 +182,131 @@ class BG3DialogueFinderApp:
         self.loading_label = ttk.Label(self.loading_frame, text="Processing...", font=("Arial", 12))
         self.loading_label.pack(pady=10)
         # Don't pack the loading frame yet - we'll show it when needed
+    
+    def create_context_menu(self):
+        self.context_menu = tk.Menu(self.root, tearoff=0)
+        self.context_menu.add_command(label="Copy Filename", command=lambda: self.copy_cell_value('filename'))
+        self.context_menu.add_command(label="Copy Dialogue", command=lambda: self.copy_cell_value('dialogue'))
+        self.context_menu.add_command(label="Copy Character", command=lambda: self.copy_cell_value('character'))
+        self.context_menu.add_command(label="Copy Type", command=lambda: self.copy_cell_value('type'))
+        self.context_menu.add_separator()
+        self.context_menu.add_command(label="Copy Row", command=self.copy_selected_row)
+        self.context_menu.add_command(label="Copy All Selected Rows", command=self.copy_all_selected_rows)
+    
+    def show_context_menu(self, event):
+        # Check if anything is selected
+        if self.tree.selection():
+            self.context_menu.post(event.x_root, event.y_root)
+    
+    def copy_cell_value(self, column):
+        selected_item = self.tree.selection()[0]
+        cell_value = self.tree.item(selected_item, 'values')[self.tree['columns'].index(column)]
+        self.root.clipboard_clear()
+        self.root.clipboard_append(cell_value)
+        self.status_text.set(f"Copied {column}: {cell_value}")
+    
+    def copy_selected_row(self):
+        if not self.tree.selection():
+            messagebox.showinfo("Info", "No row selected")
+            return
+            
+        selected_item = self.tree.selection()[0]
+        values = self.tree.item(selected_item, 'values')
+        
+        # Format the row data
+        row_text = f"Filename: {values[0]}\nDialogue: {values[1]}\nCharacter: {values[2]}\nType: {values[3]}\nStatus: {values[4]}"
+        
+        # Copy to clipboard
+        self.root.clipboard_clear()
+        self.root.clipboard_append(row_text)
+        self.status_text.set("Copied selected row to clipboard")
+    
+    def copy_all_selected_rows(self):
+        selected_items = self.tree.selection()
+        if not selected_items:
+            messagebox.showinfo("Info", "No rows selected")
+            return
+        
+        # Format all selected rows
+        all_rows_text = []
+        for item in selected_items:
+            values = self.tree.item(item, 'values')
+            row_text = f"Filename: {values[0]}\nDialogue: {values[1]}\nCharacter: {values[2]}\nType: {values[3]}\nStatus: {values[4]}"
+            all_rows_text.append(row_text)
+        
+        # Join with a separator
+        clipboard_text = "\n\n---\n\n".join(all_rows_text)
+        
+        # Copy to clipboard
+        self.root.clipboard_clear()
+        self.root.clipboard_append(clipboard_text)
+        self.status_text.set(f"Copied {len(selected_items)} rows to clipboard")
+    
+    def on_double_click(self, event):
+        # Get the item that was double-clicked
+        item = self.tree.identify('item', event.x, event.y)
+        if item:
+            # Show a dialog with the full information
+            values = self.tree.item(item, 'values')
+            info = f"Filename: {values[0]}\n\nDialogue: {values[1]}\n\nCharacter: {values[2]}\n\nType: {values[3]}\n\nStatus: {values[4]}"
+            
+            # Create a custom dialog
+            dialog = tk.Toplevel(self.root)
+            dialog.title("Row Details")
+            dialog.geometry("600x400")
+            dialog.transient(self.root)
+            dialog.grab_set()
+            
+            # Add a text widget to display the info
+            text = tk.Text(dialog, wrap=tk.WORD, padx=10, pady=10)
+            text.insert(tk.END, info)
+            text.pack(fill=tk.BOTH, expand=True)
+            
+            # Make the text selectable but not editable
+            text.config(state=tk.DISABLED)
+            
+            # Add a copy button
+            copy_frame = ttk.Frame(dialog, padding="10")
+            copy_frame.pack(fill=tk.X)
+            
+            ttk.Button(copy_frame, text="Copy All", 
+                      command=lambda: [self.root.clipboard_clear(), 
+                                      self.root.clipboard_append(info), 
+                                      self.status_text.set("Copied row details to clipboard")]).pack(side=tk.LEFT, padx=5)
+            
+            ttk.Button(copy_frame, text="Close", 
+                      command=dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def sort_treeview(self, column):
+        """Sort treeview by a column"""
+        if self.sort_column == column:
+            # If already sorting by this column, reverse the order
+            self.sort_reverse = not self.sort_reverse
+        else:
+            # Otherwise, sort by this column in ascending order
+            self.sort_column = column
+            self.sort_reverse = False
+        
+        # Get all items with their values
+        items_with_values = [(item, self.tree.item(item, 'values')) for item in self.tree.get_children('')]
+        
+        # Get the column index
+        col_idx = self.tree['columns'].index(column)
+        
+        # Sort the items
+        items_with_values.sort(key=lambda x: x[1][col_idx], reverse=self.sort_reverse)
+        
+        # Move the items in the sorted order
+        for idx, (item, _) in enumerate(items_with_values):
+            self.tree.move(item, '', idx)
+        
+        # Update the heading to show the sort direction
+        for col in self.tree['columns']:
+            if col == column:
+                direction = " ↓" if self.sort_reverse else " ↑"
+                self.tree.heading(col, text=f"{col.capitalize()}{direction}")
+            else:
+                self.tree.heading(col, text=col.capitalize())
     
     def show_loading(self):
         # Position the loading frame in the center of the window
@@ -199,9 +336,16 @@ class BG3DialogueFinderApp:
         self.status_text.set("Searching...")
         self.progress_value.set(0)
         
+        # Reset sort indicators
+        self.sort_column = None
+        self.sort_reverse = False
+        for col in self.tree['columns']:
+            self.tree.heading(col, text=col.capitalize())
+        
         # Disable buttons during search
         self.search_button.configure(state=tk.DISABLED)
         self.copy_button.configure(state=tk.DISABLED)
+        self.copy_selected_button.configure(state=tk.DISABLED)
         
         # Show loading indicator
         self.show_loading()
@@ -248,6 +392,7 @@ class BG3DialogueFinderApp:
                 self.root.after(0, self.hide_loading)
                 self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
                 self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
+                self.root.after(0, lambda: self.copy_selected_button.configure(state=tk.NORMAL))
         
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Search failed: {str(e)}"))
@@ -255,6 +400,7 @@ class BG3DialogueFinderApp:
             self.root.after(0, self.hide_loading)
             self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
             self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
+            self.root.after(0, lambda: self.copy_selected_button.configure(state=tk.NORMAL))
     
     def _update_results(self):
         # Update treeview with search results
@@ -273,6 +419,7 @@ class BG3DialogueFinderApp:
         self.hide_loading()
         self.search_button.configure(state=tk.NORMAL)
         self.copy_button.configure(state=tk.NORMAL)
+        self.copy_selected_button.configure(state=tk.NORMAL)
     
     def copy_files(self):
         if not self.search_results:
@@ -293,6 +440,7 @@ class BG3DialogueFinderApp:
         # Disable buttons during copy
         self.search_button.configure(state=tk.DISABLED)
         self.copy_button.configure(state=tk.DISABLED)
+        self.copy_selected_button.configure(state=tk.DISABLED)
         
         # Reset progress bar
         self.progress_value.set(0)
@@ -389,6 +537,7 @@ class BG3DialogueFinderApp:
             # Re-enable buttons
             self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
             self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
+            self.root.after(0, lambda: self.copy_selected_button.configure(state=tk.NORMAL))
 
 if __name__ == "__main__":
     root = tk.Tk()

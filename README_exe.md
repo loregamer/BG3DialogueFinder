@@ -12,6 +12,9 @@ This application allows you to search for Baldur's Gate 3 dialogue files using N
 - Copy found .wem files from a source directory to a destination directory
 - Real-time progress tracking during file operations
 - Visual indicators for copied and missing files
+- Sort results by clicking on any column header
+- Select and copy individual cells, rows, or multiple rows
+- View detailed information by double-clicking on a row
 - User-friendly interface with status updates
 
 ## Installation
@@ -35,6 +38,19 @@ After copying files, each file in the results will be marked with a status:
 
 - **Copied** (green background): The file was found and successfully copied
 - **Not Found** (red background): The file was not found in the source directory
+
+### Sorting Results
+
+- Click on any column header to sort the results by that column
+- Click again to reverse the sort order
+- The current sort column and direction are indicated by an arrow (↑ or ↓)
+
+### Selecting and Copying Data
+
+- **Copy Selected** button: Copies the currently selected row to the clipboard
+- **Right-click menu**: Provides options to copy individual cells, the current row, or all selected rows
+- **Double-click** on a row to view detailed information in a popup window
+- **Multiple selection**: Hold Ctrl or Shift while clicking to select multiple rows
 
 ### Search Tips
 
