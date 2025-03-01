@@ -4,7 +4,6 @@ import time
 import shutil
 import requests
 import json
-import keyring
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -14,11 +13,6 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt6.QtGui import QIcon, QPixmap
-
-# Constants for keyring
-APP_NAME = "BG3DialogueFinder"
-SOURCE_FOLDER_KEY = "source_folder"
-DEST_FOLDER_KEY = "dest_folder"
 
 # -------------------- Worker Threads --------------------
 
@@ -113,7 +107,6 @@ class BG3DialogueFinderWindow(QMainWindow):
             self.setWindowIcon(QIcon(icon_path))
 
         self.initUI()
-        self.loadSavedFolders()
 
     def initUI(self):
         central = QWidget()
@@ -241,44 +234,15 @@ class BG3DialogueFinderWindow(QMainWindow):
             }
         """)
 
-    def loadSavedFolders(self):
-        """Load saved folder paths from keyring"""
-        try:
-            source_folder = keyring.get_password(APP_NAME, SOURCE_FOLDER_KEY)
-            if source_folder:
-                self.sourceFolderEdit.setText(source_folder)
-                
-            dest_folder = keyring.get_password(APP_NAME, DEST_FOLDER_KEY)
-            if dest_folder:
-                self.destFolderEdit.setText(dest_folder)
-        except Exception as e:
-            print(f"Error loading saved folders: {e}")
-
-    def saveFolderPaths(self):
-        """Save current folder paths to keyring"""
-        try:
-            source_folder = self.sourceFolderEdit.text()
-            dest_folder = self.destFolderEdit.text()
-            
-            if source_folder:
-                keyring.set_password(APP_NAME, SOURCE_FOLDER_KEY, source_folder)
-                
-            if dest_folder:
-                keyring.set_password(APP_NAME, DEST_FOLDER_KEY, dest_folder)
-        except Exception as e:
-            print(f"Error saving folder paths: {e}")
-
     def browseSource(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Source Folder")
         if folder:
             self.sourceFolderEdit.setText(folder)
-            self.saveFolderPaths()
 
     def browseDestination(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Destination Folder")
         if folder:
             self.destFolderEdit.setText(folder)
-            self.saveFolderPaths()
 
     def search(self):
         # Clear previous results
@@ -337,9 +301,6 @@ class BG3DialogueFinderWindow(QMainWindow):
         if not destination or not os.path.isdir(destination):
             QMessageBox.critical(self, "Error", "Please select a valid destination folder")
             return
-
-        # Save folder paths when copying files
-        self.saveFolderPaths()
 
         self.searchBtn.setEnabled(False)
         self.copyFilesBtn.setEnabled(False)
