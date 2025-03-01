@@ -5,7 +5,7 @@ rmdir /S /Q dist
 del /Q *.spec
 
 echo Building the executable...
-pyinstaller --onefile --windowed bg3_dialogue_finder.py
+pyinstaller --onefile --windowed --add-data "database.db;." bg3_dialogue_finder.py
 
 echo Build complete! Press any key to exit.
 pause

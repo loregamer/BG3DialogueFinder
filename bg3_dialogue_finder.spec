@@ -5,7 +5,7 @@ a = Analysis(
     ['bg3_dialogue_finder.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('database.db', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

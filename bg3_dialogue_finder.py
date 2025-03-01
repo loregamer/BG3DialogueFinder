@@ -4,6 +4,7 @@ import requests
 import shutil
 import json
 import tkinter as tk
+import sqlite3
 from tkinter import ttk, filedialog, messagebox
 from threading import Thread
 import time
@@ -11,7 +12,7 @@ import time
 class BG3DialogueFinderApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("BG3 Dialogue Finder v1.0")
+        self.root.title("BG3 Dialogue Finder v1.1")
         self.root.geometry("800x700")
         self.root.minsize(800, 700)
         
@@ -27,6 +28,16 @@ class BG3DialogueFinderApp:
                 self.root.iconbitmap(icon_path)
         except Exception:
             pass
+        
+        # Database path
+        if getattr(sys, 'frozen', False):
+            # If the application is run as a bundle, the PyInstaller bootloader
+            # extends the sys module by a flag frozen=True and sets the app 
+            # path into variable _MEIPASS
+            self.db_path = os.path.join(sys._MEIPASS, "database.db")
+        else:
+            # Otherwise, we're running in a normal Python environment
+            self.db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database.db")
         
         # Variables
         self.search_term_1 = tk.StringVar()
@@ -354,46 +365,73 @@ class BG3DialogueFinderApp:
         # Start search in a separate thread
         Thread(target=self._search_thread).start()
     
+    def get_db_connection(self):
+        """Create a connection to the SQLite database"""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+    
     def _search_thread(self):
         try:
             # Prepare search parameters
-            data = {
-                'search_term_1': self.search_term_1.get(),
-                'search_by_1': self.search_by_1.get(),
-                'search_term_2': self.search_term_2.get(),
-                'search_by_2': self.search_by_2.get(),
-                'search_term_3': self.search_term_3.get(),
-                'search_by_3': self.search_by_3.get()
-            }
+            search_term_1 = self.search_term_1.get()
+            search_by_1 = self.search_by_1.get()
+            search_term_2 = self.search_term_2.get()
+            search_by_2 = self.search_by_2.get()
+            search_term_3 = self.search_term_3.get()
+            search_by_3 = self.search_by_3.get()
             
-            # Make API request
-            response = requests.post(
-                "https://nocomplydev.pythonanywhere.com/multi_search",
-                headers={
-                    "Accept": "*/*",
-                    "Accept-Language": "en-US,en;q=0.8",
-                    "Connection": "keep-alive",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Origin": "https://nocomplydev.pythonanywhere.com",
-                    "Referer": "https://nocomplydev.pythonanywhere.com/",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-                },
-                data=data
-            )
+            # Build SQL query
+            conditions = []
+            params = []
+
+            if search_term_1:
+                conditions.append(f"{search_by_1} LIKE ?")
+                params.append(f"%{search_term_1}%")
             
-            if response.status_code == 200:
-                self.search_results = response.json()
+            if search_term_2:
+                conditions.append(f"{search_by_2} LIKE ?")
+                params.append(f"%{search_term_2}%")
+
+            if search_term_3:
+                conditions.append(f"{search_by_3} LIKE ?")
+                params.append(f"%{search_term_3}%")    
+
+            query = "SELECT * FROM filename"
+            
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+            
+            # Connect to the database and execute query
+            try:
+                conn = self.get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                results = cursor.fetchall()
+                
+                # Process results
+                self.search_results = []
+                for row in results:
+                    self.search_results.append({
+                        'id': row['id'],
+                        'filename': row['filename'],
+                        'dialogue': row['dialogue'] if (row['dialogue'] is not None and row['dialogue'].strip() != '') else 'Unknown',
+                        'character': row['character'] if (row['character'] is not None and row['character'].strip() != '') else 'Unknown',
+                        'type': row['type'] if (row['type'] is not None and row['type'].strip() != '') else 'Unknown',
+                    })
+                
+                conn.close()
                 
                 # Update UI in the main thread
                 self.root.after(0, self._update_results)
-            else:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"API request failed with status code {response.status_code}"))
+            except sqlite3.Error as e:
+                self.root.after(0, lambda: messagebox.showerror("Database Error", f"Database query failed: {str(e)}"))
                 self.root.after(0, lambda: self.status_text.set("Search failed"))
                 self.root.after(0, self.hide_loading)
                 self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
                 self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
                 self.root.after(0, lambda: self.copy_selected_button.configure(state=tk.NORMAL))
-        
+            
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Search failed: {str(e)}"))
             self.root.after(0, lambda: self.status_text.set("Search failed"))

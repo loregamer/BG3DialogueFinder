@@ -105,3 +105,9 @@ If you prefer to run the application without building an executable:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Version 1.1 Updates
+
+- **Offline Operation**: The application now includes a local database and no longer requires an internet connection to search for dialogue.
+- **Improved Performance**: Searches are now faster as they query the local database directly.
+- **Reduced Dependencies**: Removed the need for external API calls.
