@@ -4,3 +4,11 @@ env/
 Venv/
 *.log
 .DS_Store
+
+/__pycache__
+/build
+.env
+/dist
+bg3_dialogue_finder.spec
+/output
+bg3_dialogue_finder.spec
