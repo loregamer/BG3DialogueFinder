@@ -1,0 +1,5 @@
+This is a placeholder for the icon.ico file.
+
+You'll need to create or download an icon file (icon.ico) and place it in the same directory as the Python script before building the executable.
+
+You can create an icon file using online tools or image editors that support the .ico format. 
