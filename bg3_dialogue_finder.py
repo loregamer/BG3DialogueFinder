@@ -11,7 +11,7 @@ import time
 class BG3DialogueFinderApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("BG3 Dialogue Finder")
+        self.root.title("BG3 Dialogue Finder v1.0")
         self.root.geometry("800x700")
         self.root.minsize(800, 700)
         
@@ -57,7 +57,7 @@ class BG3DialogueFinderApp:
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # Title
-        title_label = ttk.Label(main_frame, text="BG3 Dialogue Finder", font=("Arial", 16, "bold"))
+        title_label = ttk.Label(main_frame, text="BG3 Dialogue Finder v1.0", font=("Arial", 16, "bold"))
         title_label.pack(pady=(0, 10))
         
         # Search frame
