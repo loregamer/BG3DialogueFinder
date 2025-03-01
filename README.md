@@ -1,163 +1,113 @@
-# NoComply BG3 Dialogue Finder &emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="http://buymeacoffee.com/nocomply"><img src="https://github.com/user-attachments/assets/e6b8903e-75a3-4bae-a8bb-3ed593ae2133" alt="Buy me a coffee." width="162.6px" height="35.1px"></a>
+# BG3 Dialogue Finder - File Copier
 
 ## Overview
 
-- Search Baldur's Gate 3's audio files by dialogue, character and filename. Database contains all .wem files stored in english.pak and SharedSounds.pak.
-- Download results in .csv format.
-- Ability for the community to edit database entries to improve accuracy.
+This application allows you to search for Baldur's Gate 3 dialogue files using NoComply's BG3 Dialogue Finder database and copy the matching .wem files from a source directory to a destination directory for modding purposes.
+
+## Features
+
+- Search for dialogue files by dialogue text, character name, file type, or filename
+- Combine up to three search criteria for more specific results
+- View detailed search results in a table format
+- Copy found .wem files from a source directory to a destination directory
+- Real-time progress tracking during file operations
+- Visual indicators for copied and missing files
+- Sort results by clicking on any column header
+- Select and copy individual cells, rows, or multiple rows
+- View detailed information by double-clicking on a row
+- User-friendly interface with status updates
 
 ## Installation
 
-- Online web app with edit feature <a href="https://nocomplydev.pythonanywhere.com/">here</a> (recommended).
-- Offline via Github: Just download, run app.py and copy the link provided by your terminal into your browser. I'll update the repo with the live database every week or so.
+1. Download the latest release from the [Releases](https://github.com/yourusername/BG3DialogueFinder/releases) page
+2. Extract the ZIP file to a location of your choice
+3. Run `BG3DialogueFinder.exe`
 
-## Use Cases
+## Usage
 
-- For modding dialogue audio in Baldur's Gate 3.
+1. Enter your search criteria in one or more of the search fields
+2. Select the appropriate search type for each field (dialogue, character, type, or filename)
+3. Click "Search" to find matching files
+4. Browse and select your source folder (where the original .wem files are located)
+5. Browse and select your destination folder (where you want to copy the files)
+6. Click "Copy Files" to copy the found files from source to destination
 
-## More Information & Usage
+### File Status Indicators
 
-### Database Creation and Accuracy
+After copying files, each file in the results will be marked with a status:
 
-Localization files are (mostly) referenced in english.loca along with the relevant subtitle. Accuracy for these should be 100%. The 5% or so that aren't referenced were run through OpenAI Whisper Large model and then cleaned up manually. Character names were scraped from Pandora's list of Voice UUIDs.
+- **Copied** (green background): The file was found and successfully copied
+- **Not Found** (red background): The file was not found in the source directory
 
-SharedSounds was harder:
+### Sorting Results
 
-• There are no subtitles for these so I ran the whole directory through OpenAI Whisper Large model (compute time: 141 hours, my CPU is screaming at me). Accuracy for any of these files that contain dialogue should be 90-100%.
+- Click on any column header to sort the results by that column
+- Click again to reverse the sort order
+- The current sort column and direction are indicated by an arrow (↑ or ↓)
 
-• SharedSounds character names are currently only added for the files listed in TealRabbit19's Point-Click Dialogue Files Database. While endlessly useful, by the creator's own admission this database is not 100% exhaustive/accurate.
+### Selecting and Copying Data
 
-• **_For any files in SharedSounds that don't contain dialogue, Whisper will likely have printed garbled nonsense/bizarre sentences._** If you find any of these feel free to submit an edit on the web app. I've cleared out some already but with 200,000+ entries there will still be plenty.
+- **Copy Selected** button: Copies the currently selected row to the clipboard
+- **Right-click menu**: Provides options to copy individual cells, the current row, or all selected rows
+- **Double-click** on a row to view detailed information in a popup window
+- **Multiple selection**: Hold Ctrl or Shift while clicking to select multiple rows
 
-It is not impossible that some files have been missed - I am far from the best at coding and pretty much everything was scraped/moved/imported using one thrown-together-at-2am python script or another. That being said, I'm pretty confident that it's all there.
+### Search Tips
 
-### Community Editing
+- You can use multiple search boxes to execute more complex queries
+- Searches work as 'AND' functions, not 'OR' functions
+- For example, searching for 'Astarion' in Characters and 'tadpole' in Dialogue will return all instances of Astarion saying tadpole
+- Leave a search field empty if you don't want to use that criterion
 
-Any entries/sections of entries that are not definitively 100% accurate have an edit feature. Anyone can access this via the <a href="https://nocomplydev.pythonanywhere.com/">web app</a> and submit revisions. All revisions are sent to me for verification - I go through them every few days or so. Remember, this is a search-based database - if you submit anything, make sure it's accurate and that your spelling/grammar is correct.
+### File Types
 
-Abuse of the edit feature (multiple incorrect submissions, multiple submissions with bad spelling/grammar, trolling etc.) will result in an immediate IP ban.
+The 'Type' field refers to the type of dialogue:
 
-The offline version does not include an edit feature. If you want to make edits, either contribute to the project by using the web app or use any SQL database editor on your offline database.db file.
+- Localization (Subtitled)
+- Localization - Not In English.loca
+- Various action types (Action_Attack, Action_BuffTarget, etc.)
 
-### Usage Examples
+## Building from Source
 
-You can use multiple search boxes to execute more complex queries, e.g. searching 'Astarion' in Characters and 'tadpole' in Dialogue will return all instances of Astarion saying tadpole. These work together as 'and' functions, not 'or' functions, i.e. searching for 'Astarion' in Characters and 'Gale' in Characters would return nothing as there is no character with both of those names.
+If you want to build the executable yourself:
 
-'Type' refers to the type of dialogue. Localization files have two types:
+1. Clone the repository
+2. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Build the executable:
+   ```
+   pyinstaller --onefile --windowed --icon=icon.ico bg3_dialogue_finder.py
+   ```
+4. The executable will be created in the `dist` directory
 
-```
-Localization (Subtitled)
-Localization - Not In English.loca
-```
+## Running Without Building
 
-For the types in SharedSounds, I have referred to the resource identifiers in /[PAK]\_Vocals/\_merged.lsf. They are as follows:
+If you prefer to run the application without building an executable:
 
-```
-Action_Attack
-Action_Attack Stealth
-Action_BuffTarget
-Action_BuffTarget Negative
-Action_BuffTarget Postive
-Action_BuffTarget Romance
-Action_BuffTarget Stealth
-Action_BuffTarget Stealth Negative
-Action_BuffTarget Stealth Positive
-Action BuffTarget Stealth Romance
-Action_Dip
-Action_Dip Combat
-Action_Dip Stealth
-Action_HealTarget
-Action_HealTarget Negative
-Action_HealTarget Positive
-Action_HealTarget Romance
-Action_HealTarget Stealth
-Action_HealTarget Stealth Negative
-Action_HealTarget Stealth Positive
-Action_HealTarget Stealth Romance
-Action_HelpGeneric
-Action_HelpGeneric Negative
-Action_HelpGeneric Positive
-Action_HelpGeneric Romance
-Action_HelpGeneric Stealth
-Action_HelpGeneric Stealth Negative
-Action_HelpGeneric Stealth Positive
-Action_HelpGeneric Stealth Romance
-Action_HelpImmobilized
-Action_HelpImmobilized Negative
-Action_HelpImmobilized Positive
-Action_HelpImmobilized Romance
-Action_HelpImmobilized Stealth
-Action_HelpImmobilized Stealth Negative
-Action_HelpImmobilized Stealth Positive
-Action_HelpImmobilized Stealth Romance
-Action_InteractWith
-Action_InteractWith Combat
-Action_InteractWith Stealth
-Action_ItemPickup
-Action_ItemPickup Stealth
-Action_OpenContainer
-Action_OpenContainer Combat
-Action_OpenContainer Stealth
-Action_OpenLock
-Action_OpenLock Combat
-Action_OpenLock Stealth
-Action_PickPocket
-Action_SpeakTo
-Action_SpeakTo Negative
-Action_SpeakTo Positive
-Action_SpeakTo Stealth
-Action_SpeakTo Stealth Negative
-Action_SpeakTo Stealth Positive
-Action_Utility
-Action_Utility Combat
-Action_Utility Stealth
-ReptAction_HideSuccess
-ReptAction_MoveTo
-ReptAction_PickPocketSuccess
-ReptAction_PickPocketSuccess Combat
-ReptAction_PortraitClick
-ReptAction_PortraitClick Combat
-ReptAction_PortraitClick Stealth
-ReptAction_PortraitClickDowned
-ReptAction_PortraitClickSpam
-ReptAction_PortraitClickSpam Stealth
-```
+1. Make sure you have Python 3.8 or higher installed
+2. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Run the application:
+   ```
+   python bg3_dialogue_finder.py
+   ```
+   Or simply double-click the `run_app.bat` file
 
-Sometimes these have character-specific modifiers appended such as `(Durge)` for dark urge-specific lines. These are not currently available to select in the edit dropdown as the use cases are fairly limited, but I may get around to it eventually.
+## Credits
 
-## Planned Features
+- This application uses the [NoComply BG3 Dialogue Finder](https://nocomplydev.pythonanywhere.com/) API
+- Original database and web application created by NoComply
 
-Updates will only be worked on if and when the tool is in regular, active use by community members.
+## License
 
-- Add audio file lengths. Could be useful for localization mods, as these are required to be the same length or shorter than the vanilla files in order to play correctly in-game without cutting off.
-- Add editable, searchable 'Notes' section for database entries.
-- (Long-term) Inject local database changes either directly into english.loca OR create english.xml mod file with local changes. Useful for easy subtitle creation when replacing dialogue with original lines.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Special Thanks
+## Version 1.1 Updates
 
-- **Pandora (Nexus)**, for their list of Voice UUIDs. Invaluable.
-- **TealRabbit19 (Nexus)**, for their extraordinary labour of love in manually creating their Dialogue Files Database. Your patience astounds me.
-- **Larian Studios**, for their support of the modding community.
-
-## Changelog
-
-```
-10/13/24 - V1.0.1 - Fixed exception when search returned null values.
-10/13/24 - V1.0 - Public release. Implemented SharedSounds and unreferenced Localization files. GUI changes.
-10/10/24 - V0.2b - Implemented revision system & download functionality. Minor GUI changes.
-10/06/24 - V0.1b - Initial Version. Localization only, SharedSounds not yet implemented. Not for use.
-```
-
-## Version History
-
-### v1.1
-
-- Integrated local database for offline operation
-- Removed dependency on external API
-- Improved search performance
-
-### v1.0
-
-- Initial release
-- Search for dialogue by various parameters
-- Copy audio files from source to destination
+- **Offline Operation**: The application now includes a local database and no longer requires an internet connection to search for dialogue.
+- **Improved Performance**: Searches are now faster as they query the local database directly.
+- **Reduced Dependencies**: Removed the need for external API calls.
