@@ -10,6 +10,8 @@ This application allows you to search for Baldur's Gate 3 dialogue files using N
 - Combine up to three search criteria for more specific results
 - View detailed search results in a table format
 - Copy found .wem files from a source directory to a destination directory
+- Real-time progress tracking during file operations
+- Visual indicators for copied and missing files
 - User-friendly interface with status updates
 
 ## Installation
@@ -26,6 +28,13 @@ This application allows you to search for Baldur's Gate 3 dialogue files using N
 4. Browse and select your source folder (where the original .wem files are located)
 5. Browse and select your destination folder (where you want to copy the files)
 6. Click "Copy Files" to copy the found files from source to destination
+
+### File Status Indicators
+
+After copying files, each file in the results will be marked with a status:
+
+- **Copied** (green background): The file was found and successfully copied
+- **Not Found** (red background): The file was not found in the source directory
 
 ### Search Tips
 
@@ -56,6 +65,21 @@ If you want to build the executable yourself:
    pyinstaller --onefile --windowed --icon=icon.ico bg3_dialogue_finder.py
    ```
 4. The executable will be created in the `dist` directory
+
+## Running Without Building
+
+If you prefer to run the application without building an executable:
+
+1. Make sure you have Python 3.8 or higher installed
+2. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Run the application:
+   ```
+   python bg3_dialogue_finder.py
+   ```
+   Or simply double-click the `run_app.bat` file
 
 ## Credits
 

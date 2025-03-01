@@ -6,6 +6,7 @@ import json
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from threading import Thread
+import time
 
 class BG3DialogueFinderApp:
     def __init__(self, root):
@@ -38,6 +39,7 @@ class BG3DialogueFinderApp:
         self.destination_folder = tk.StringVar()
         self.search_results = []
         self.status_text = tk.StringVar(value="Ready")
+        self.progress_value = tk.DoubleVar(value=0.0)
         
         # Create UI
         self.create_ui()
@@ -112,15 +114,27 @@ class BG3DialogueFinderApp:
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Button(button_frame, text="Search", command=self.search).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(button_frame, text="Copy Files", command=self.copy_files).pack(side=tk.LEFT)
+        self.search_button = ttk.Button(button_frame, text="Search", command=self.search)
+        self.search_button.pack(side=tk.LEFT, padx=(0, 5))
+        
+        self.copy_button = ttk.Button(button_frame, text="Copy Files", command=self.copy_files)
+        self.copy_button.pack(side=tk.LEFT)
+        
+        # Progress bar
+        self.progress_frame = ttk.Frame(main_frame)
+        self.progress_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.progress_bar = ttk.Progressbar(self.progress_frame, orient=tk.HORIZONTAL, 
+                                           length=100, mode='determinate', 
+                                           variable=self.progress_value)
+        self.progress_bar.pack(fill=tk.X)
         
         # Results frame
         results_frame = ttk.LabelFrame(main_frame, text="Search Results", padding="10")
         results_frame.pack(fill=tk.BOTH, expand=True)
         
         # Create treeview for results
-        columns = ('filename', 'dialogue', 'character', 'type')
+        columns = ('filename', 'dialogue', 'character', 'type', 'status')
         self.tree = ttk.Treeview(results_frame, columns=columns, show='headings')
         
         # Define headings
@@ -128,12 +142,14 @@ class BG3DialogueFinderApp:
         self.tree.heading('dialogue', text='Dialogue')
         self.tree.heading('character', text='Character')
         self.tree.heading('type', text='Type')
+        self.tree.heading('status', text='Status')
         
         # Define columns
         self.tree.column('filename', width=150)
-        self.tree.column('dialogue', width=300)
-        self.tree.column('character', width=150)
-        self.tree.column('type', width=150)
+        self.tree.column('dialogue', width=250)
+        self.tree.column('character', width=120)
+        self.tree.column('type', width=120)
+        self.tree.column('status', width=80)
         
         # Add scrollbars
         scrollbar_y = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.tree.yview)
@@ -148,6 +164,21 @@ class BG3DialogueFinderApp:
         # Status bar
         status_bar = ttk.Label(self.root, textvariable=self.status_text, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Create a loading indicator
+        self.loading_frame = ttk.Frame(self.root)
+        self.loading_label = ttk.Label(self.loading_frame, text="Processing...", font=("Arial", 12))
+        self.loading_label.pack(pady=10)
+        # Don't pack the loading frame yet - we'll show it when needed
+    
+    def show_loading(self):
+        # Position the loading frame in the center of the window
+        self.loading_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.root.update_idletasks()
+    
+    def hide_loading(self):
+        self.loading_frame.place_forget()
+        self.root.update_idletasks()
     
     def browse_source(self):
         folder = filedialog.askdirectory(title="Select Source Folder")
@@ -166,6 +197,14 @@ class BG3DialogueFinderApp:
         
         self.search_results = []
         self.status_text.set("Searching...")
+        self.progress_value.set(0)
+        
+        # Disable buttons during search
+        self.search_button.configure(state=tk.DISABLED)
+        self.copy_button.configure(state=tk.DISABLED)
+        
+        # Show loading indicator
+        self.show_loading()
         self.root.update_idletasks()
         
         # Start search in a separate thread
@@ -206,10 +245,16 @@ class BG3DialogueFinderApp:
             else:
                 self.root.after(0, lambda: messagebox.showerror("Error", f"API request failed with status code {response.status_code}"))
                 self.root.after(0, lambda: self.status_text.set("Search failed"))
+                self.root.after(0, self.hide_loading)
+                self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
+                self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
         
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Search failed: {str(e)}"))
             self.root.after(0, lambda: self.status_text.set("Search failed"))
+            self.root.after(0, self.hide_loading)
+            self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
+            self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
     
     def _update_results(self):
         # Update treeview with search results
@@ -218,10 +263,16 @@ class BG3DialogueFinderApp:
                 result.get('filename', ''),
                 result.get('dialogue', 'Unknown'),
                 result.get('character', 'Unknown'),
-                result.get('type', 'Unknown')
+                result.get('type', 'Unknown'),
+                "Pending"
             ))
         
         self.status_text.set(f"Found {len(self.search_results)} results")
+        
+        # Hide loading indicator and re-enable buttons
+        self.hide_loading()
+        self.search_button.configure(state=tk.NORMAL)
+        self.copy_button.configure(state=tk.NORMAL)
     
     def copy_files(self):
         if not self.search_results:
@@ -239,69 +290,121 @@ class BG3DialogueFinderApp:
             messagebox.showerror("Error", "Please select a valid destination folder")
             return
         
+        # Disable buttons during copy
+        self.search_button.configure(state=tk.DISABLED)
+        self.copy_button.configure(state=tk.DISABLED)
+        
+        # Reset progress bar
+        self.progress_value.set(0)
+        
+        # Reset status column in treeview
+        for item in self.tree.get_children():
+            self.tree.set(item, 'status', "Pending")
+        
+        # Show loading indicator
+        self.status_text.set("Preparing to copy files...")
+        self.root.update_idletasks()
+        
         # Start copy in a separate thread
         Thread(target=self._copy_thread, args=(source, destination)).start()
     
     def _copy_thread(self, source, destination):
-        self.root.after(0, lambda: self.status_text.set("Copying files..."))
+        self.root.after(0, lambda: self.status_text.set("Scanning source folder for files..."))
         
         copied = 0
         not_found = 0
+        total_files = len(self.search_results)
         
         try:
-            # Create a list to store filenames that weren't found
-            missing_files = []
+            # First scan the source directory to build a file index for faster lookup
+            self.root.after(0, lambda: self.status_text.set("Building file index..."))
+            file_index = {}
             
-            for result in self.search_results:
+            # Update progress as we scan
+            file_count = 0
+            for root, _, files in os.walk(source):
+                for file in files:
+                    if file.lower().endswith('.wem'):
+                        file_index[file] = root
+                        file_count += 1
+                        if file_count % 1000 == 0:  # Update progress periodically
+                            self.root.after(0, lambda: self.status_text.set(f"Indexed {file_count} files..."))
+            
+            self.root.after(0, lambda: self.status_text.set(f"Found {file_count} .wem files in source folder. Starting copy..."))
+            
+            # Now process each search result
+            for i, result in enumerate(self.search_results):
                 filename = result.get('filename', '')
                 if not filename:
                     continue
                 
                 # Extract just the filename part (without path)
-                # The filename might be a full path or just a filename
                 base_filename = os.path.basename(filename)
                 
-                # Search for the file in the source directory (including subdirectories)
-                found = False
-                for root, _, files in os.walk(source):
-                    if base_filename in files:
-                        source_path = os.path.join(root, base_filename)
-                        dest_path = os.path.join(destination, base_filename)
-                        
-                        # Copy the file
-                        shutil.copy2(source_path, dest_path)
-                        copied += 1
-                        found = True
-                        break
+                # Update the current file in status
+                self.root.after(0, lambda: self.status_text.set(f"Processing {i+1}/{total_files}: {base_filename}"))
                 
-                if not found:
+                # Update progress bar
+                progress_percent = (i / total_files) * 100
+                self.root.after(0, lambda: self.progress_value.set(progress_percent))
+                
+                # Get the item ID in the treeview
+                item_id = self.tree.get_children()[i]
+                
+                # Check if file exists in our index
+                if base_filename in file_index:
+                    source_path = os.path.join(file_index[base_filename], base_filename)
+                    dest_path = os.path.join(destination, base_filename)
+                    
+                    # Copy the file
+                    shutil.copy2(source_path, dest_path)
+                    copied += 1
+                    
+                    # Update status in treeview
+                    self.root.after(0, lambda id=item_id: self.tree.set(id, 'status', "Copied"))
+                    self.root.after(0, lambda id=item_id: self.tree.item(id, tags=('copied',)))
+                else:
                     not_found += 1
-                    missing_files.append(base_filename)
+                    
+                    # Update status in treeview
+                    self.root.after(0, lambda id=item_id: self.tree.set(id, 'status', "Not Found"))
+                    self.root.after(0, lambda id=item_id: self.tree.item(id, tags=('not_found',)))
+                
+                # Small delay to allow UI updates
+                time.sleep(0.01)
+            
+            # Set progress to 100% when done
+            self.root.after(0, lambda: self.progress_value.set(100))
             
             # Show results
             message = f"Copied {copied} files. {not_found} files were not found."
-            if missing_files:
-                message += "\n\nWould you like to see the list of files that weren't found?"
-                
-                def show_result():
-                    result = messagebox.askyesno("Copy Complete", message)
-                    if result and missing_files:
-                        missing_list = "\n".join(missing_files[:100])
-                        if len(missing_files) > 100:
-                            missing_list += f"\n\n... and {len(missing_files) - 100} more"
-                        messagebox.showinfo("Missing Files", missing_list)
-                    self.status_text.set(f"Copied {copied} files. {not_found} files not found.")
-                
-                self.root.after(0, show_result)
-            else:
-                self.root.after(0, lambda: messagebox.showinfo("Copy Complete", message))
-                self.root.after(0, lambda: self.status_text.set(f"Copied {copied} files"))
+            self.root.after(0, lambda: messagebox.showinfo("Copy Complete", message))
+            self.root.after(0, lambda: self.status_text.set(f"Copied {copied} files. {not_found} files not found."))
                 
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Copy failed: {str(e)}"))
             self.root.after(0, lambda: self.status_text.set("Copy failed"))
+        
+        finally:
+            # Re-enable buttons
+            self.root.after(0, lambda: self.search_button.configure(state=tk.NORMAL))
+            self.root.after(0, lambda: self.copy_button.configure(state=tk.NORMAL))
 
 if __name__ == "__main__":
     root = tk.Tk()
+    
+    # Configure style for treeview tags
+    style = ttk.Style()
+    style.configure("Treeview", font=('Arial', 10))
+    style.map('Treeview', 
+              foreground=[('disabled', 'gray')],
+              background=[('selected', '#0078D7')])
+    
+    # Create and run the app
     app = BG3DialogueFinderApp(root)
+    
+    # Configure tag colors for treeview
+    app.tree.tag_configure('copied', background='#E6FFE6')  # Light green
+    app.tree.tag_configure('not_found', background='#FFE6E6')  # Light red
+    
     root.mainloop() 
