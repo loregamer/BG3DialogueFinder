@@ -125,7 +125,7 @@ class CopyWorker(QtCore.QObject):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("BG3 Dialogue Finder v1.0")
+        self.setWindowTitle("BG3 Dialogue Finder v2.0")
         self.resize(800, 700)
         
         # Full paths for database and config
