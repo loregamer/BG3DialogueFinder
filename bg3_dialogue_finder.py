@@ -222,7 +222,7 @@ class MainWindow(QtWidgets.QMainWindow):
         buttons_layout.addWidget(self.btn_copy)
         
         self.btn_copy_sel = QtWidgets.QPushButton(qta.icon('fa5s.clipboard'), "Copy Selected")
-        # You can add a slot for copy-selected functionality here.
+        self.btn_copy_sel.clicked.connect(self.copy_selected_to_clipboard)
         buttons_layout.addWidget(self.btn_copy_sel)
         
         # --- Progress Bar ---
@@ -233,6 +233,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table = QtWidgets.QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["Filename", "Dialogue", "Character", "Type", "Status"])
         self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+        
+        # Enable sorting
+        self.table.setSortingEnabled(True)
+        
+        # Enable selection of multiple rows
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+        
+        # Enable copy with Ctrl+C
+        self.table.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
+        
         main_layout.addWidget(self.table)
         
         # --- Status Bar ---
@@ -369,6 +381,10 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def on_search_finished(self, results):
         self.search_results = results
+        
+        # Temporarily disable sorting while populating the table
+        self.table.setSortingEnabled(False)
+        
         # Populate table
         self.table.setRowCount(len(results))
         for row, result in enumerate(results):
@@ -377,6 +393,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(result.get('character', 'Unknown')))
             self.table.setItem(row, 3, QtWidgets.QTableWidgetItem(result.get('type', 'Unknown')))
             self.table.setItem(row, 4, QtWidgets.QTableWidgetItem("Pending"))
+        
+        # Re-enable sorting after populating
+        self.table.setSortingEnabled(True)
+        
         self.statusBar().showMessage(f"Found {len(results)} results")
         self.btn_search.setEnabled(True)
     
@@ -418,6 +438,11 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def on_file_copied(self, filename):
         # Update the table to show the file was copied (green background)
+        # Temporarily disable sorting to ensure we can find and update the correct row
+        was_sorting_enabled = self.table.isSortingEnabled()
+        if was_sorting_enabled:
+            self.table.setSortingEnabled(False)
+            
         for row in range(self.table.rowCount()):
             file_item = self.table.item(row, 0)
             if file_item and os.path.basename(file_item.text()) == filename:
@@ -429,9 +454,18 @@ class MainWindow(QtWidgets.QMainWindow):
                     item = self.table.item(row, col)
                     if item:
                         item.setBackground(QtGui.QColor(200, 255, 200))  # Light green
+        
+        # Restore sorting if it was enabled
+        if was_sorting_enabled:
+            self.table.setSortingEnabled(True)
     
     def on_file_not_found(self, filename):
         # Update the table to show the file was not found (red background)
+        # Temporarily disable sorting to ensure we can find and update the correct row
+        was_sorting_enabled = self.table.isSortingEnabled()
+        if was_sorting_enabled:
+            self.table.setSortingEnabled(False)
+            
         for row in range(self.table.rowCount()):
             file_item = self.table.item(row, 0)
             if file_item and os.path.basename(file_item.text()) == filename:
@@ -443,12 +477,92 @@ class MainWindow(QtWidgets.QMainWindow):
                     item = self.table.item(row, col)
                     if item:
                         item.setBackground(QtGui.QColor(255, 200, 200))  # Light red
+        
+        # Restore sorting if it was enabled
+        if was_sorting_enabled:
+            self.table.setSortingEnabled(True)
     
     def on_copy_finished(self, message):
         QtWidgets.QMessageBox.information(self, "Copy Complete", message)
         self.statusBar().showMessage(message)
         self.btn_copy.setEnabled(True)
         
+    def copy_selected_to_clipboard(self):
+        """Copy selected rows to clipboard in a tab-separated format"""
+        selected_indexes = self.table.selectedIndexes()
+        if not selected_indexes:
+            return
+            
+        # Group indexes by row
+        rows = {}
+        for index in selected_indexes:
+            if index.row() not in rows:
+                rows[index.row()] = []
+            rows[index.row()].append(index)
+            
+        # Sort rows by row number
+        sorted_rows = sorted(rows.items(), key=lambda x: x[0])
+        
+        # Build text with tab-separated values
+        text = ""
+        for row, indexes in sorted_rows:
+            # Sort indexes by column
+            sorted_indexes = sorted(indexes, key=lambda x: x.column())
+            row_text = "\t".join(self.table.item(index.row(), index.column()).text() 
+                                for index in sorted_indexes)
+            text += row_text + "\n"
+            
+        # Copy to clipboard
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(text)
+        self.statusBar().showMessage("Selected rows copied to clipboard", 3000)
+        
+    def show_context_menu(self, position):
+        """Show context menu for the table"""
+        menu = QtWidgets.QMenu()
+        
+        copy_cell_action = menu.addAction("Copy Cell")
+        copy_row_action = menu.addAction("Copy Row")
+        copy_all_selected_action = menu.addAction("Copy All Selected")
+        
+        # Get the action that was clicked
+        action = menu.exec(self.table.mapToGlobal(position))
+        
+        if action == copy_cell_action:
+            self.copy_cell()
+        elif action == copy_row_action:
+            self.copy_row()
+        elif action == copy_all_selected_action:
+            self.copy_selected_to_clipboard()
+            
+    def copy_cell(self):
+        """Copy the content of the current cell to clipboard"""
+        indexes = self.table.selectedIndexes()
+        if indexes:
+            # Just take the first selected cell
+            index = indexes[0]
+            text = self.table.item(index.row(), index.column()).text()
+            clipboard = QtWidgets.QApplication.clipboard()
+            clipboard.setText(text)
+            self.statusBar().showMessage(f"Cell copied to clipboard", 3000)
+            
+    def copy_row(self):
+        """Copy the current row to clipboard"""
+        indexes = self.table.selectedIndexes()
+        if not indexes:
+            return
+            
+        # Get the row of the first selected cell
+        row = indexes[0].row()
+        
+        # Build text with tab-separated values for this row
+        text = "\t".join(self.table.item(row, col).text() 
+                        for col in range(self.table.columnCount()))
+        
+        # Copy to clipboard
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(text)
+        self.statusBar().showMessage("Row copied to clipboard", 3000)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
