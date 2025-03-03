@@ -4,6 +4,7 @@ import json
 import sqlite3
 import shutil
 import time
+import subprocess
 
 from PyQt6 import QtCore, QtWidgets, QtGui
 import qtawesome as qta
@@ -206,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dest_edit = QtWidgets.QLineEdit()
         self.dest_edit.editingFinished.connect(self.on_dest_edit_finished)
         folder_layout.addWidget(self.dest_edit, 1, 1)
+        
         btn_browse_dest = QtWidgets.QPushButton(qta.icon('fa5s.folder-open'), "Browse...")
         btn_browse_dest.clicked.connect(self.browse_destination)
         folder_layout.addWidget(btn_browse_dest, 1, 2)
@@ -224,6 +226,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_copy_sel = QtWidgets.QPushButton(qta.icon('fa5s.clipboard'), "Copy Selected")
         self.btn_copy_sel.clicked.connect(self.copy_selected_to_clipboard)
         buttons_layout.addWidget(self.btn_copy_sel)
+        
+        btn_open_dest = QtWidgets.QPushButton(qta.icon('fa5s.external-link-alt'), "Open Destination")
+        btn_open_dest.clicked.connect(self.open_destination_folder)
+        buttons_layout.addWidget(btn_open_dest)
         
         # --- Progress Bar ---
         self.progress_bar = QtWidgets.QProgressBar()
@@ -563,6 +569,29 @@ class MainWindow(QtWidgets.QMainWindow):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(text)
         self.statusBar().showMessage("Row copied to clipboard", 3000)
+
+    def open_destination_folder(self):
+        """Open the destination folder in the file explorer"""
+        if not self._destination_folder_actual:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Please select a destination folder first")
+            return
+            
+        if not os.path.exists(self._destination_folder_actual):
+            QtWidgets.QMessageBox.warning(self, "Warning", "The destination folder does not exist")
+            return
+            
+        # Open the folder using the default file explorer
+        try:
+            if sys.platform == 'win32':
+                os.startfile(self._destination_folder_actual)
+            elif sys.platform == 'darwin':  # macOS
+                subprocess.Popen(['open', self._destination_folder_actual])
+            else:  # Linux and other Unix-like
+                subprocess.Popen(['xdg-open', self._destination_folder_actual])
+                
+            self.statusBar().showMessage(f"Opened destination folder: {self._destination_folder_actual}", 3000)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Error", f"Failed to open folder: {str(e)}")
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
