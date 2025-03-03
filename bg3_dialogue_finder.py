@@ -190,8 +190,10 @@ class MainWindow(QtWidgets.QMainWindow):
         btn_remove = QtWidgets.QPushButton(qta.icon('fa5s.minus'), "Remove")
         btn_remove.clicked.connect(self.remove_source_folder)
         btns_layout = QtWidgets.QVBoxLayout()
+        btns_layout.setSpacing(0)  # Set spacing to 0 to keep buttons close together
         btns_layout.addWidget(btn_add)
         btns_layout.addWidget(btn_remove)
+        btns_layout.addStretch(1)  # Add stretch to push extra space to the bottom
         folder_layout.addLayout(btns_layout, 0, 2)
         
         # Destination folder
