@@ -69,12 +69,16 @@ class BG3DialogueFinderApp:
         self.load_config()
     
     def mask_user_profile_path(self, path):
-        """Replaces the current user's home folder with %USERPROFILE% for display."""
-        user_home = os.path.expanduser("~")
-        if path.startswith(user_home):
-            return path.replace(user_home, "%USERPROFILE%", 1)
-        return path
-    
+        """
+        Normalizes the given path and replaces the user's home folder
+        portion with %USERPROFILE% for display.
+        """
+        user_home = os.path.normpath(os.path.expanduser("~"))
+        norm_path = os.path.normpath(path)
+        if norm_path.lower().startswith(user_home.lower()):
+            return "%USERPROFILE%" + norm_path[len(user_home):]
+        return norm_path
+
     def create_ui(self):
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
