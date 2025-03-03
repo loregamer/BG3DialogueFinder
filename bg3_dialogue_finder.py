@@ -219,12 +219,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_search.clicked.connect(self.search)
         buttons_layout.addWidget(self.btn_search)
         
-        self.btn_copy = QtWidgets.QPushButton(qta.icon('fa5s.copy'), "Copy Files")
+        self.btn_copy = QtWidgets.QPushButton(qta.icon('fa5s.copy'), "Copy All Files")
         self.btn_copy.clicked.connect(self.copy_files)
         buttons_layout.addWidget(self.btn_copy)
         
-        self.btn_copy_sel = QtWidgets.QPushButton(qta.icon('fa5s.clipboard'), "Copy Selected")
-        self.btn_copy_sel.clicked.connect(self.copy_selected_to_clipboard)
+        self.btn_copy_sel = QtWidgets.QPushButton(qta.icon('fa5s.copy'), "Copy Selected Files")
+        self.btn_copy_sel.clicked.connect(self.copy_selected_files)
+        self.btn_copy_sel.setEnabled(False)  # Initially disabled
         buttons_layout.addWidget(self.btn_copy_sel)
         
         btn_open_dest = QtWidgets.QPushButton(qta.icon('fa5s.external-link-alt'), "Open Destination")
@@ -250,6 +251,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # Enable copy with Ctrl+C
         self.table.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_context_menu)
+        
+        # Add keyboard shortcuts
+        copy_to_clipboard_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+C"), self.table)
+        copy_to_clipboard_shortcut.activated.connect(self.copy_selected_to_clipboard)
+        
+        copy_files_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Shift+C"), self.table)
+        copy_files_shortcut.activated.connect(self.copy_selected_files)
+        
+        # Connect selection changes to update button state
+        self.table.itemSelectionChanged.connect(self.update_button_states)
         
         main_layout.addWidget(self.table)
         
@@ -405,6 +416,10 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.statusBar().showMessage(f"Found {len(results)} results")
         self.btn_search.setEnabled(True)
+        
+        # Enable/disable copy buttons based on results
+        self.btn_copy.setEnabled(bool(results))
+        # Copy Selected button will be enabled when rows are selected via update_button_states
     
     def on_search_error(self, error_msg):
         QtWidgets.QMessageBox.critical(self, "Search Error", error_msg)
@@ -491,45 +506,71 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_copy_finished(self, message):
         QtWidgets.QMessageBox.information(self, "Copy Complete", message)
         self.statusBar().showMessage(message)
-        self.btn_copy.setEnabled(True)
-        
-    def copy_selected_to_clipboard(self):
-        """Copy selected rows to clipboard in a tab-separated format"""
+        self.btn_copy.setEnabled(bool(self.search_results))
+        self.update_button_states()  # This will enable/disable the copy_selected button based on selection
+    
+    def copy_selected_files(self):
+        """Copy selected rows' files to the destination folder"""
         selected_indexes = self.table.selectedIndexes()
         if not selected_indexes:
+            QtWidgets.QMessageBox.information(self, "Info", "No rows selected")
             return
             
-        # Group indexes by row
-        rows = {}
-        for index in selected_indexes:
-            if index.row() not in rows:
-                rows[index.row()] = []
-            rows[index.row()].append(index)
-            
-        # Sort rows by row number
-        sorted_rows = sorted(rows.items(), key=lambda x: x[0])
+        # Check for valid source and destination folders
+        if not self.source_folders:
+            QtWidgets.QMessageBox.critical(self, "Error", "Please add at least one valid source folder")
+            return
+        if not self._destination_folder_actual or not os.path.isdir(self._destination_folder_actual):
+            QtWidgets.QMessageBox.critical(self, "Error", "Please select a valid destination folder")
+            return
         
-        # Build text with tab-separated values
-        text = ""
-        for row, indexes in sorted_rows:
-            # Sort indexes by column
-            sorted_indexes = sorted(indexes, key=lambda x: x.column())
-            row_text = "\t".join(self.table.item(index.row(), index.column()).text() 
-                                for index in sorted_indexes)
-            text += row_text + "\n"
+        # Get unique rows from selection
+        selected_rows = set(index.row() for index in selected_indexes)
+        
+        # Create a subset of search results for selected rows
+        selected_results = []
+        for row in selected_rows:
+            filename = self.table.item(row, 0).text()
+            # Find the corresponding search result
+            for result in self.search_results:
+                if result.get('filename', '') == filename:
+                    selected_results.append(result)
+                    break
+        
+        if not selected_results:
+            QtWidgets.QMessageBox.information(self, "Info", "No valid files selected")
+            return
             
-        # Copy to clipboard
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(text)
-        self.statusBar().showMessage("Selected rows copied to clipboard", 3000)
+        # Disable both copy buttons during the operation
+        self.btn_copy.setEnabled(False)
+        self.btn_copy_sel.setEnabled(False)
+        self.statusBar().showMessage("Copying selected files...")
+        self.progress_bar.setValue(0)
+        
+        # Create the copy worker and thread
+        self.copy_thread = QtCore.QThread()
+        self.copy_worker = CopyWorker(self.source_folders, self._destination_folder_actual, selected_results)
+        self.copy_worker.moveToThread(self.copy_thread)
+        self.copy_thread.started.connect(self.copy_worker.run)
+        self.copy_worker.progress.connect(self.progress_bar.setValue)
+        self.copy_worker.status_update.connect(lambda msg: self.statusBar().showMessage(msg))
+        self.copy_worker.file_copied.connect(self.on_file_copied)
+        self.copy_worker.file_not_found.connect(self.on_file_not_found)
+        self.copy_worker.finished.connect(self.on_copy_finished)
+        self.copy_worker.finished.connect(lambda: self.copy_thread.quit())
+        self.copy_worker.finished.connect(self.copy_worker.deleteLater)
+        self.copy_thread.finished.connect(self.copy_thread.deleteLater)
+        self.copy_thread.start()
         
     def show_context_menu(self, position):
         """Show context menu for the table"""
         menu = QtWidgets.QMenu()
         
-        copy_cell_action = menu.addAction("Copy Cell")
-        copy_row_action = menu.addAction("Copy Row")
-        copy_all_selected_action = menu.addAction("Copy All Selected")
+        copy_cell_action = menu.addAction("Copy Cell to Clipboard")
+        copy_row_action = menu.addAction("Copy Row to Clipboard")
+        copy_all_selected_text_action = menu.addAction("Copy Selected Text to Clipboard")
+        menu.addSeparator()
+        copy_selected_files_action = menu.addAction("Copy Selected Files to Destination")
         
         # Get the action that was clicked
         action = menu.exec(self.table.mapToGlobal(position))
@@ -538,8 +579,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.copy_cell()
         elif action == copy_row_action:
             self.copy_row()
-        elif action == copy_all_selected_action:
+        elif action == copy_all_selected_text_action:
             self.copy_selected_to_clipboard()
+        elif action == copy_selected_files_action:
+            self.copy_selected_files()
             
     def copy_cell(self):
         """Copy the content of the current cell to clipboard"""
@@ -570,6 +613,36 @@ class MainWindow(QtWidgets.QMainWindow):
         clipboard.setText(text)
         self.statusBar().showMessage("Row copied to clipboard", 3000)
 
+    def copy_selected_to_clipboard(self):
+        """Copy selected rows to clipboard in a tab-separated format"""
+        selected_indexes = self.table.selectedIndexes()
+        if not selected_indexes:
+            return
+            
+        # Group indexes by row
+        rows = {}
+        for index in selected_indexes:
+            if index.row() not in rows:
+                rows[index.row()] = []
+            rows[index.row()].append(index)
+            
+        # Sort rows by row number
+        sorted_rows = sorted(rows.items(), key=lambda x: x[0])
+        
+        # Build text with tab-separated values
+        text = ""
+        for row, indexes in sorted_rows:
+            # Sort indexes by column
+            sorted_indexes = sorted(indexes, key=lambda x: x.column())
+            row_text = "\t".join(self.table.item(index.row(), index.column()).text() 
+                                for index in sorted_indexes)
+            text += row_text + "\n"
+            
+        # Copy to clipboard
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(text)
+        self.statusBar().showMessage("Selected rows copied to clipboard", 3000)
+
     def open_destination_folder(self):
         """Open the destination folder in the file explorer"""
         if not self._destination_folder_actual:
@@ -592,6 +665,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusBar().showMessage(f"Opened destination folder: {self._destination_folder_actual}", 3000)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Error", f"Failed to open folder: {str(e)}")
+
+    def update_button_states(self):
+        """Update the enabled state of the Copy Selected Files button based on table selection"""
+        selected_indexes = self.table.selectedIndexes()
+        self.btn_copy_sel.setEnabled(bool(selected_indexes))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
