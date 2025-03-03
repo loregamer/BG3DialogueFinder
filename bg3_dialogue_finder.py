@@ -70,6 +70,8 @@ class CopyWorker(QtCore.QObject):
     finished = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)  # progress percent
     status_update = QtCore.pyqtSignal(str)
+    file_copied = QtCore.pyqtSignal(str)  # Signal for when a file is copied
+    file_not_found = QtCore.pyqtSignal(str)  # Signal for when a file is not found
     
     def __init__(self, sources, destination, search_results):
         super().__init__()
@@ -107,8 +109,10 @@ class CopyWorker(QtCore.QObject):
                     dest_path = os.path.join(self.destination, base_filename)
                     shutil.copy2(src_path, dest_path)
                     copied += 1
+                    self.file_copied.emit(base_filename)  # Emit signal that file was copied
                 else:
                     not_found += 1
+                    self.file_not_found.emit(base_filename)  # Emit signal that file was not found
                 time.sleep(0.01)  # Small delay for UI updates
             self.progress.emit(100)
             self.finished.emit(f"Copied {copied} files. {not_found} files not found.")
@@ -404,11 +408,41 @@ class MainWindow(QtWidgets.QMainWindow):
         self.copy_thread.started.connect(self.copy_worker.run)
         self.copy_worker.progress.connect(self.progress_bar.setValue)
         self.copy_worker.status_update.connect(lambda msg: self.statusBar().showMessage(msg))
+        self.copy_worker.file_copied.connect(self.on_file_copied)  # Connect file copied signal
+        self.copy_worker.file_not_found.connect(self.on_file_not_found)  # Connect file not found signal
         self.copy_worker.finished.connect(self.on_copy_finished)
         self.copy_worker.finished.connect(lambda: self.copy_thread.quit())
         self.copy_worker.finished.connect(self.copy_worker.deleteLater)
         self.copy_thread.finished.connect(self.copy_thread.deleteLater)
         self.copy_thread.start()
+    
+    def on_file_copied(self, filename):
+        # Update the table to show the file was copied (green background)
+        for row in range(self.table.rowCount()):
+            file_item = self.table.item(row, 0)
+            if file_item and os.path.basename(file_item.text()) == filename:
+                # Update status column
+                status_item = self.table.item(row, 4)
+                status_item.setText("Copied")
+                # Set background color to green for all cells in the row
+                for col in range(self.table.columnCount()):
+                    item = self.table.item(row, col)
+                    if item:
+                        item.setBackground(QtGui.QColor(200, 255, 200))  # Light green
+    
+    def on_file_not_found(self, filename):
+        # Update the table to show the file was not found (red background)
+        for row in range(self.table.rowCount()):
+            file_item = self.table.item(row, 0)
+            if file_item and os.path.basename(file_item.text()) == filename:
+                # Update status column
+                status_item = self.table.item(row, 4)
+                status_item.setText("Not Found")
+                # Set background color to red for all cells in the row
+                for col in range(self.table.columnCount()):
+                    item = self.table.item(row, col)
+                    if item:
+                        item.setBackground(QtGui.QColor(255, 200, 200))  # Light red
     
     def on_copy_finished(self, message):
         QtWidgets.QMessageBox.information(self, "Copy Complete", message)
